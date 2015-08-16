@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/searchBar">
+        <file>lupe.jpg</file>
+        <file>lupe.png</file>
+    </qresource>
+</RCC>

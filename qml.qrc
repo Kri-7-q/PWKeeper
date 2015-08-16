@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>SearchField.qml</file>
+        <file>TableViewHeader.qml</file>
+        <file>TableViewItem.qml</file>
+        <file>TableViewRow.qml</file>
+    </qresource>
+</RCC>
