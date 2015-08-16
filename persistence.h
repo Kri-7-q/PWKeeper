@@ -30,8 +30,8 @@ private:
     // Methods
     QString findWhereClause(const QVariantMap &searchObject) const;
     bool hasValueForKey(const QVariantMap &searchObject, const QString &key) const;
-    QString queryColumns(const QVariantMap &searchObject) const;
-    QString queryColumns(const QStringList &columnList) const;
+    QString getQueryColumnString(const QVariantMap &searchObject) const;
+    QString getQueryColumnString(const QStringList &columnList) const;
     QList<QVariantMap> getAccountList(QSqlQuery &query) const;
 };
 
