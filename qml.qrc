@@ -5,5 +5,9 @@
         <file>TableViewHeader.qml</file>
         <file>TableViewItem.qml</file>
         <file>TableViewRow.qml</file>
+        <file>PushButtonStyle.qml</file>
+        <file>SearchBar.qml</file>
+        <file>AccountDialog.qml</file>
+        <file>ButtonBar.qml</file>
     </qresource>
 </RCC>

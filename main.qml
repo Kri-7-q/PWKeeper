@@ -1,5 +1,7 @@
 import QtQuick 2.3
 import QtQuick.Controls 1.2
+import Controlers 1.0
+import Models 1.0
 
 ApplicationWindow {
     visible: true
@@ -8,110 +10,117 @@ ApplicationWindow {
     height: 960
     title: qsTr("Password Kepper")
 
-    // Title bar
-    // -----------------------------------------------------------
-    Rectangle {
-        id: titleBar
-        width: parent.width
-        height: 80
-        color: "lightblue"
-        anchors.top: parent.top
-
-        Text {
-            font.pixelSize: 24
-            text: qsTr("Passwort Keeper")
-            anchors {
-                horizontalCenter: parent.horizontalCenter
-                verticalCenter: parent.verticalCenter
-            }
-        }
+    TableModel {
+        id: tableModel
     }
 
-    // Search bar
-    // -----------------------------------------------------------
-    Rectangle {
-        id: searchBar
-        width: parent.width
-        height: 80
-        color: "lightgray"
-        anchors.top: titleBar.bottom
-
-        Row {
-            spacing: 20
-            anchors {
-                horizontalCenter: parent.horizontalCenter
-                verticalCenter: parent.verticalCenter
-            }
-
-            ComboBox {
-                id: searchType
-                model: [qsTr("Provider"), qsTr("Username")]
-            }
-            SearchField {
-                id: searchText
-                width: 150
-                onClicked: controler.findValuesFor(searchType.currentText, text)
-                Keys.onReturnPressed: controler.findValuesFor(searchType.currentText, text)
-            }
-            Button {
-                text: qsTr("Show all")
-                onClicked: controler.showAllData()
-            }
-        }
-    }
-
-    // List
-    // -----------------------------------------------------------
-    TableView {
-        id: accountList
-        width: parent.width
+    PWKeeperControler {
+        id: controler
         model: tableModel
-        anchors.top: searchBar.bottom
-        anchors.bottom: controlBar.top
-        alternatingRowColors: false
-
-        TableViewColumn { role: "provider"; title: "Provider"; width: 150 }
-        TableViewColumn { role: "username"; title: "Benutzername"; width: 200 }
-
-        headerDelegate: TableViewHeader { fontSize: 14; borderWidth: 0 }
-        itemDelegate: TableViewItem { fontSize: 14 }
-        rowDelegate: TableViewRow { height: 20 }
-
-        Keys.onReturnPressed: controler.copyPasswordToClipboard(currentRow)
     }
 
-    // Control bar
-    // -----------------------------------------------------------
-    Rectangle {
-        id: controlBar
-        width: parent.width
-        height: 80
-        color: "orange"
-        anchors.bottom: parent.bottom
+    Item {
+        anchors.fill: parent
 
-        Row {
-            spacing: 20
-            anchors.centerIn: parent
+        // Title bar
+        // -----------------------------------------------------------
+        Rectangle {
+            id: titleBar
+            width: parent.width
+            height: 80
+            color: "orange"
+            anchors.top: parent.top
 
-            Button {
-                text: qsTr("+")
-            }
-            Button {
-                text: qsTr("-")
-            }
-            Button {
-                text: qsTr("Modify")
-                enabled: accountList.currentRow >= 0
-            }
-            Button {
-                text: qsTr("Save changes")
-                enabled: false
-            }
-            Button {
-                text: qsTr("Password")
-                enabled: accountList.currentRow >= 0
-                onClicked: controler.copyPasswordToClipboard(accountList.currentRow)
+            Text {
+                font.pixelSize: 24
+                text: qsTr("Passwort Keeper")
+                anchors {
+                    horizontalCenter: parent.horizontalCenter
+                    verticalCenter: parent.verticalCenter
+                }
             }
         }
-    }
-}
+
+        // Search bar
+        // -----------------------------------------------------------
+        SearchBar {
+            id: searchBar
+            width: parent.width
+            height: 80
+            controlHigh: 30
+            anchors.top: titleBar.bottom
+        }
+
+        // List
+        // -----------------------------------------------------------
+        TableView {
+            id: accountList
+            width: parent.width
+            model: tableModel
+            anchors.top: searchBar.bottom
+            anchors.bottom: controlBar.top
+            alternatingRowColors: false
+
+            TableViewColumn { role: "provider"; title: "Provider"; width: 150 }
+            TableViewColumn { role: "username"; title: "Benutzername"; width: 200 }
+
+            headerDelegate: TableViewHeader { fontSize: 14; borderWidth: 0 }
+            itemDelegate: TableViewItem { fontSize: 14 }
+            rowDelegate: TableViewRow { height: 20 }
+
+            Keys.onReturnPressed: controler.copyPasswordToClipboard(currentRow)
+        }
+
+        // Dialog to modify or show an Account
+        // -----------------------------------------------------------
+        AccountDialog {
+            id: accountDialog
+            width: parent.width
+            anchors {
+                top: titleBar.bottom
+                bottom: controlBar.top
+                left: parent.left
+                right: parent.right
+                margins: 20
+            }
+            onVisibleChanged: {
+                if (visible === true) {
+                    model = controler.modelRowEntry(accountList.currentRow)
+                }
+            }
+        }
+
+        // Control bar
+        // -----------------------------------------------------------
+        ButtonBar {
+            id: controlBar
+            anchors.bottom: parent.bottom
+        }
+
+        // -----------------------------------------------------------------------
+        // States
+        states: [
+            State {
+                // State:   ShowList
+                when: controler.currentView === PWKeeperControler.AccountList
+                PropertyChanges { target: searchBar; visible: true }
+                PropertyChanges { target: accountList; visible: true }
+                PropertyChanges { target: accountDialog; visible: false }
+            },
+            State {
+                // State:   ModifyAccount
+                when: controler.currentView === PWKeeperControler.ModifyAccount
+                PropertyChanges { target: searchBar; visible: false }
+                PropertyChanges { target: accountList; visible: false }
+                PropertyChanges { target: accountDialog; visible: true; editable: true }
+            },
+            State {
+                // State:   ShowAccount
+                when: controler.currentView === PWKeeperControler.ShowAccount
+                PropertyChanges { target: searchBar; visible: false }
+                PropertyChanges { target: accountList; visible: false }
+                PropertyChanges { target: accountDialog; visible: true; editable: false }
+            }
+        ]
+    } // END Item
+} // END ApplicationWindow

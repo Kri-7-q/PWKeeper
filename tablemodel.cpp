@@ -66,6 +66,16 @@ void TableModel::insertAccount(const QVariantMap &account)
 }
 
 /**
+ * @brief TableModel::getRow
+ * @param row
+ * @return
+ */
+QVariantMap TableModel::getRow(const int row) const
+{
+    return m_rowList[row];
+}
+
+/**
  * PRIVATE
  * Get a role name from model role.
  * All role names are content of a hashmap.

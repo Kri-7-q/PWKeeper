@@ -28,6 +28,8 @@ public:
 
     // Insert data
     void insertAccount(const QVariantMap &account);
+    // Read data
+    QVariantMap getRow(const int row) const;
 
 private:
     QList<QVariantMap> m_rowList;
