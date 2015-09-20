@@ -7,7 +7,8 @@
         <file>TableViewRow.qml</file>
         <file>PushButtonStyle.qml</file>
         <file>SearchBar.qml</file>
-        <file>AccountDialog.qml</file>
-        <file>ButtonBar.qml</file>
+        <file>ModifyDialog.qml</file>
+        <file>ShowDialog.qml</file>
+        <file>AccountList.qml</file>
     </qresource>
 </RCC>

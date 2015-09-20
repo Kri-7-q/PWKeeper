@@ -41,47 +41,27 @@ ApplicationWindow {
             }
         }
 
-        // Search bar
-        // -----------------------------------------------------------
-        SearchBar {
-            id: searchBar
-            width: parent.width
-            height: 80
-            controlHigh: 30
-            anchors.top: titleBar.bottom
-        }
-
         // List
         // -----------------------------------------------------------
-        TableView {
+        AccountList {
             id: accountList
-            width: parent.width
-            model: tableModel
-            anchors.top: searchBar.bottom
-            anchors.bottom: controlBar.top
-            alternatingRowColors: false
-
-            TableViewColumn { role: "provider"; title: "Provider"; width: 150 }
-            TableViewColumn { role: "username"; title: "Benutzername"; width: 200 }
-
-            headerDelegate: TableViewHeader { fontSize: 14; borderWidth: 0 }
-            itemDelegate: TableViewItem { fontSize: 14 }
-            rowDelegate: TableViewRow { height: 20 }
-
-            Keys.onReturnPressed: controler.copyPasswordToClipboard(currentRow)
-        }
-
-        // Dialog to modify or show an Account
-        // -----------------------------------------------------------
-        AccountDialog {
-            id: accountDialog
-            width: parent.width
             anchors {
                 top: titleBar.bottom
-                bottom: controlBar.top
                 left: parent.left
                 right: parent.right
-                margins: 20
+                bottom: parent.bottom
+            }
+        }
+
+        // Dialog to modify an Account
+        // -----------------------------------------------------------
+        ModifyDialog {
+            id: modifyDialog
+            anchors {
+                top: titleBar.bottom
+                bottom: parent.bottom
+                left: parent.left
+                right: parent.right
             }
             onVisibleChanged: {
                 if (visible === true) {
@@ -90,11 +70,22 @@ ApplicationWindow {
             }
         }
 
-        // Control bar
-        // -----------------------------------------------------------
-        ButtonBar {
-            id: controlBar
-            anchors.bottom: parent.bottom
+        // Dialog to show an account
+        // -------------------------------------------------------------
+        ShowDialog {
+            id: showDialog
+            width: parent.width
+            anchors {
+                top: titleBar.bottom
+                bottom: parent.bottom
+                left: parent.left
+                right: parent.right
+            }
+            onVisibleChanged: {
+                if (visible === true) {
+                    model = controler.modelRowEntry(accountList.currentRow)
+                }
+            }
         }
 
         // -----------------------------------------------------------------------
@@ -103,23 +94,23 @@ ApplicationWindow {
             State {
                 // State:   ShowList
                 when: controler.currentView === PWKeeperControler.AccountList
-                PropertyChanges { target: searchBar; visible: true }
                 PropertyChanges { target: accountList; visible: true }
-                PropertyChanges { target: accountDialog; visible: false }
+                PropertyChanges { target: modifyDialog; visible: false }
+                PropertyChanges { target: showDialog; visible: false }
             },
             State {
                 // State:   ModifyAccount
                 when: controler.currentView === PWKeeperControler.ModifyAccount
-                PropertyChanges { target: searchBar; visible: false }
                 PropertyChanges { target: accountList; visible: false }
-                PropertyChanges { target: accountDialog; visible: true; editable: true }
+                PropertyChanges { target: modifyDialog; visible: true; }
+                PropertyChanges { target: showDialog; visible: false }
             },
             State {
                 // State:   ShowAccount
                 when: controler.currentView === PWKeeperControler.ShowAccount
-                PropertyChanges { target: searchBar; visible: false }
                 PropertyChanges { target: accountList; visible: false }
-                PropertyChanges { target: accountDialog; visible: true; editable: false }
+                PropertyChanges { target: modifyDialog; visible: false; }
+                PropertyChanges { target: showDialog; visible: true }
             }
         ]
     } // END Item

@@ -27,7 +27,6 @@ void Controler::setDataModified(bool dataModified)
     if (m_dataModified != dataModified) {
         m_dataModified = dataModified;
         emit dataModifiedChanged();
-        emit controlBarButtonChanged();
     }
 }
 
@@ -43,7 +42,6 @@ void Controler::setCurrentView(const Controler::AppView view)
     if (m_currentView != view) {
         m_currentView = view;
         emit currentModeChanged();
-        emit controlBarButtonChanged();
     }
 }
 
@@ -154,7 +152,6 @@ void Controler::setCurrentTableViewRow(int currentTableViewRow)
     if (m_currentTableViewRow != currentTableViewRow) {
         m_currentTableViewRow = currentTableViewRow;
         emit currentTableViewRowChanged();
-        emit controlBarButtonChanged();
     }
 }
 

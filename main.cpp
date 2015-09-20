@@ -1,5 +1,4 @@
 #include <QApplication>
-#include <QQmlApplicationEngine>
 #include <QtQml>
 #include "controler.h"
 

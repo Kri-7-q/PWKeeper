@@ -9,7 +9,6 @@ class Controler : public QObject
 {
     Q_OBJECT
     Q_ENUMS(AppView)
-    Q_ENUMS(ControlBarButton)
     Q_PROPERTY(bool dataModified READ dataModified NOTIFY dataModifiedChanged)
     Q_PROPERTY(AppView currentView READ currentView WRITE setCurrentView NOTIFY currentModeChanged)
     Q_PROPERTY(TableModel* model READ model WRITE setModel NOTIFY modelChanged)
@@ -19,7 +18,6 @@ public:
 
     // Constants
     enum AppView { AccountList, ShowAccount, ModifyAccount };
-    enum ControlBarButton { Add, Delete, Show, Modify, Password, SafeChanges, Undo, Back, OK };
 
     // Getter und Setter
     bool dataModified() const;
@@ -35,7 +33,6 @@ signals:
     void dataModifiedChanged();
     void currentModeChanged();
     void modelChanged();
-    void controlBarButtonChanged();
     void currentTableViewRowChanged();
 
 public slots:
