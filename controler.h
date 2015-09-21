@@ -26,8 +26,6 @@ public:
     void setCurrentView(const AppView view);
     void setModel(TableModel *model);
     TableModel* model() const;
-    int currentTableViewRow() const;
-    void setCurrentTableViewRow(int currentTableViewRow);
 
 signals:
     void dataModifiedChanged();
