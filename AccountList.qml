@@ -1,8 +1,12 @@
 import QtQuick 2.0
 import QtQuick.Controls 1.2
 import Controlers 1.0
+import Models 1.0
 
 Item {
+
+    property alias currentRow: tableView.currentRow
+
     // ---------------------------------------------------
     // Search bar
     SearchBar {
@@ -15,7 +19,7 @@ Item {
     // ---------------------------------------------------
     // Table view
     TableView {
-        id: accountList
+        id: tableView
         width: parent.width
         model: tableModel
         anchors {
@@ -28,7 +32,7 @@ Item {
         TableViewColumn { role: "username"; title: "Benutzername"; width: 200 }
 
         headerDelegate: TableViewHeader { fontSize: 14; borderWidth: 0 }
-        itemDelegate: TableViewItem { fontSize: 14 }
+        itemDelegate: TableViewItem { fontSize: 14; fontFamily: "Avenir" }
         rowDelegate: TableViewRow { height: 20 }
 
         Keys.onReturnPressed: controler.copyPasswordToClipboard(currentRow)
@@ -65,12 +69,13 @@ Item {
                 height: 30
                 text: qsTr("-")
                 style: PushButtonStyle {}
-                visible: controler.currentView === PWKeeperControler.AccountList
+                visible: (controler.currentView === PWKeeperControler.AccountList) && tableView.currentRow >= 0
+                onClicked: controler.deleteModelRow(tableView.currentRow)
             }
             Button {
                 height: 30
                 text: qsTr("Show")
-                visible: (controler.currentView === PWKeeperControler.AccountList) && accountList.currentRow > -1
+                visible: (controler.currentView === PWKeeperControler.AccountList) && tableView.currentRow >= 0
                 style: PushButtonStyle {}
                 onClicked: controler.currentView = PWKeeperControler.ShowAccount
             }
@@ -78,19 +83,25 @@ Item {
                 height: 30
                 text: qsTr("Modify")
                 style: PushButtonStyle {}
-                visible: (controler.currentView === PWKeeperControler.AccountList) && accountList.currentRow > -1
+                visible: (controler.currentView === PWKeeperControler.AccountList) && tableView.currentRow >= 0
                 onClicked: controler.currentView = PWKeeperControler.ModifyAccount
             }
             Button {
                 height: 30
                 text: qsTr("Password")
-                onClicked: controler.copyPasswordToClipboard(accountList.currentRow)
+                onClicked: controler.copyPasswordToClipboard(tableView.currentRow)
                 style: PushButtonStyle {}
-                visible: (controler.currentView === PWKeeperControler.AccountList) && accountList.currentRow > -1
+                visible: (controler.currentView === PWKeeperControler.AccountList) && tableView.currentRow >= 0
             }
             Button {
                 height: 30
-                text: qsTr("Save changes")
+                text: qsTr("Undo")
+                style: PushButtonStyle {}
+                visible: accountList.currentRow >= 0 && (tableModel.modelRowState(accountList.currentRow) !== TableModel.Origin)
+            }
+            Button {
+                height: 30
+                text: qsTr("Save")
                 style: PushButtonStyle {}
                 visible: controler.dataModified
             }

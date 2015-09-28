@@ -31,7 +31,6 @@ signals:
     void dataModifiedChanged();
     void currentModeChanged();
     void modelChanged();
-    void currentTableViewRowChanged();
 
 public slots:
     void findValuesFor(const QString &type, const QString &value) const;
@@ -40,6 +39,7 @@ public slots:
     void copyPasswordToClipboard(const int currentRow) const;
     QVariantMap modelRowEntry(const int row) const;
     void setModifiedData(const QVariantMap &data);
+    bool deleteModelRow(const int row);
 
 private:
     Persistence m_persistence;
@@ -47,7 +47,6 @@ private:
     QList<QVariantMap> m_databaseContent;
     bool m_dataModified;
     AppView m_currentView;
-    int m_currentTableViewRow;
 
     // Methods
     QVariantMap getSearchParameter(const QStringList &columnList) const;

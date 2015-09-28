@@ -80,26 +80,25 @@ Item {
                 onClicked: controler.currentView = PWKeeperControler.AccountList
             }
             Button {
-                text: qsTr("OK")
+                text: qsTr(" OK ")
                 height: 30
                 style: PushButtonStyle {}
-                onClicked: controler.setModifiedData(modifiedData())
+                onClicked: {
+                    controler.setModifiedData(modifiedData())
+                }
             }
         }
     }
 
     // Get modified data from input fields.
     function modifiedData() {
-        var account = { "id":textFieldRepeater.itemAt(0).text,
-                        "provider":textFieldRepeater.itemAt(1).text,
-                        "username":textFieldRepeater.itemAt(2).text,
-                        "password":textFieldRepeater.itemAt(3).text,
-                        "question":textFieldRepeater.itemAt(4).text,
-                        "answer":textFieldRepeater.itemAt(5).text,
-                        "definedcharacter":textFieldRepeater.itemAt(6).text,
-                        "lastmodify":textFieldRepeater.itemAt(7).text }
+        for (var i=0; i<translationModel.count; ++i) {
+            var modelKey = translationModel.get(i).descriptor
+            var value = textFieldRepeater.itemAt(i).text
+            root.model[modelKey] = value
+        }
 
-        return account
+        return root.model
     }
 
     // List model to get a field name and the key (descriptor) to the value.

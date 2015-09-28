@@ -1,10 +1,13 @@
 import QtQuick 2.0
+import Models 1.0
 
 Rectangle {
     color: "transparent"
 
     property color normalTextColor: "black"
     property color highlightTextColor: "blue"
+    property color modifiedtextColor: "orange"
+    property color deletedTextColor: "red"
     property alias fontFamily: itemText.font.family
     property alias fontSize: itemText.font.pixelSize
     property alias fontWeight: itemText.font.weight
@@ -12,7 +15,7 @@ Rectangle {
 
     Text {
         id: itemText
-        color: styleData.selected ? parent.highlightTextColor : parent.normalTextColor
+        color: textColor()
         text: styleData.value
         elide: styleData.elideMode
         horizontalAlignment: styleData.textAlignment | Text.AlignVCenter
@@ -25,5 +28,27 @@ Rectangle {
             pixelSize: 12
             weight: Font.Normal
         }
+        onColorChanged: {
+            font.strikeout = (tableModel.modelRowState(styleData.row) === TableModel.Deleted)
+            font.italic = (tableModel.modelRowState(styleData.row) === TableModel.Modified)
+        }
+    }
+
+    // Text color desition.
+    function textColor() {
+        var color = "yellow"
+        var modelRowState = tableModel.modelRowState(styleData.row)
+
+        if (modelRowState === TableModel.Origin) {
+            color = (styleData.selected) ? highlightTextColor : normalTextColor
+        }
+        else if (modelRowState === TableModel.Modified) {
+            color = modifiedtextColor
+        }
+        else if (modelRowState === TableModel.Deleted) {
+            color = deletedTextColor
+        }
+
+        return color
     }
 }

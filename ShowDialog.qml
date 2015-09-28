@@ -61,7 +61,7 @@ Item {
 
             Button {
                 height: 30
-                text: qsTr("Back")
+                text: qsTr(" Back ")
                 style: PushButtonStyle {}
                 onClicked: controler.currentView = PWKeeperControler.AccountList
             }

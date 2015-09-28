@@ -119,7 +119,10 @@ void Controler::copyPasswordToClipboard(const int currentRow) const
  */
 QVariantMap Controler::modelRowEntry(const int row) const
 {
-    return m_model->getRow(row);
+    QVariantMap entry = m_model->getRow(row);
+    entry.insert(QString("row"), QVariant(row));
+
+    return entry;
 }
 
 /**
@@ -130,31 +133,47 @@ void Controler::setModifiedData(const QVariantMap &data)
 {
     if (data.isEmpty()) {
         qDebug() << "There is NO data !!!";
+        setCurrentView(AccountList);
+        return;
     }
-    qDebug() << data;
+    int row = data.value(QString("row")).toInt();
+    QModelIndex modelIndex = m_model->index(row, 0);
+    QStringList keyList = QStringList() << "provider" << "username" << "password" << "passwordlength" << "answer"
+                                        << "question" << "definedcharacter";
+    foreach (QString key, keyList) {
+        QVariant modelValue = m_model->data(modelIndex, key);
+        QVariant modifiedValue = data.value(key);
+        if (modifiedValue.convert(modelValue.type())) {
+            if (modelValue != modifiedValue) {
+                m_model->setData(modelIndex, modifiedValue, key);
+                m_model->setData(modelIndex, QVariant(TableModel::Modified), QString("state"));
+                setDataModified(true);
+                qDebug() << "Modified (" << key << ") : " << modifiedValue;
+            }
+        } else {
+            qDebug() << "Could not convert QVariant value from QString to " << modelValue;
+        }
+    }
+    setCurrentView(AccountList);
 }
 
 /**
- * @brief Controler::currentTableViewRow
+ * @brief Controler::deleteModelRow
+ * @param row
  * @return
  */
-int Controler::currentTableViewRow() const
+bool Controler::deleteModelRow(const int row)
 {
-    return m_currentTableViewRow;
-}
-
-/**
- * @brief Controler::setCurrentTableViewRow
- * @param currentTableViewRow
- */
-void Controler::setCurrentTableViewRow(int currentTableViewRow)
-{
-    if (m_currentTableViewRow != currentTableViewRow) {
-        m_currentTableViewRow = currentTableViewRow;
-        emit currentTableViewRowChanged();
+    QModelIndex index = m_model->index(row, 0);
+    bool dataModified = m_model->setData(index, QVariant(TableModel::Deleted), QString("state"));
+    if (! dataModified) {
+        qDebug() << "Can not delete this row !";
+        return false;
     }
-}
+    setDataModified(true);
 
+    return true;
+}
 
 /**
  * @brief Controler::getSearchParameterForWholeTable
