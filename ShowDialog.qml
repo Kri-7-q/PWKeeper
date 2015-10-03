@@ -5,6 +5,17 @@ import Controlers 1.0
 Item {
     id: root
 
+    ShowControler {
+        id: showControler
+        model: tableModel
+    }
+
+    onVisibleChanged: {
+        if (visible === true) {
+            model = showControler.modelRowEntry(accountList.currentRow)
+        }
+    }
+
     property int descriptionWidth: width / 3
     property var model: {"id":"none", "provider":"none", "username":"none", "password":"none", "question":"none",
                          "answer":"none", "definedcharacter":"none", "lastmodify":"none", "passwordlength":"none"}
@@ -22,7 +33,7 @@ Item {
         }
 
         Repeater {
-            model: translationModel
+            model: dataInfoModel
 
             Row {
                 spacing: 10
@@ -63,51 +74,8 @@ Item {
                 height: 30
                 text: qsTr(" Back ")
                 style: PushButtonStyle {}
-                onClicked: controler.currentView = PWKeeperControler.AccountList
+                onClicked: viewControler.currentView = ViewControler.AccountList
             }
-        }
-    }
-
-    // -----------------------------------------------------------------------
-    // List model to get a field name and the key (descriptor) to the value.
-    ListModel {
-        id: translationModel
-
-        ListElement {
-            name: "Id"
-            descriptor: "id"
-        }
-        ListElement {
-            name: "Provider"
-            descriptor: "provider"
-        }
-        ListElement {
-            name: "Benutzername"
-            descriptor: "username"
-        }
-        ListElement {
-            name: "Passwort"
-            descriptor: "password"
-        }
-        ListElement {
-            name: "Length"
-            descriptor: "passwordlength"
-        }
-        ListElement {
-            name: "Frage"
-            descriptor: "question"
-        }
-        ListElement {
-            name: "Antwort"
-            descriptor: "answer"
-        }
-        ListElement {
-            name: "Zeichensatz"
-            descriptor: "definedcharacter"
-        }
-        ListElement {
-            name: "Letzte Änderung"
-            descriptor: "lastmodify"
         }
     }
 }

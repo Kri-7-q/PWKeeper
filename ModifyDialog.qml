@@ -5,6 +5,17 @@ import Controlers 1.0
 Item {
     id:root
 
+    ModifyControler {
+        id: modifyControler
+        model: tableModel
+    }
+
+    onVisibleChanged: {
+        if (visible === true) {
+            model = modifyControler.modelRowEntry(accountList.currentRow)
+        }
+    }
+
     property int descriptionWidth: width / 3
     property var model: {"id":"none", "provider":"none", "username":"none", "password":"none", "question":"none",
                          "answer":"none", "definedcharacter":"none", "lastmodify":"none", "passwordlength":"none"}
@@ -23,7 +34,7 @@ Item {
 
         Repeater {
             id: textFieldRepeater
-            model: translationModel
+            model: dataInfoModel
 
             Row {
                 id: entryRow
@@ -77,14 +88,31 @@ Item {
                 text: qsTr("Back")
                 height: 30
                 style: PushButtonStyle {}
-                onClicked: controler.currentView = PWKeeperControler.AccountList
+                onClicked: viewControler.currentView = ViewControler.AccountList
+            }
+            Button {
+                text: qsTr("Generate Password")
+                height: 30
+                style: PushButtonStyle {}
+                onClicked: {
+                    var password = modifyControler.generatePassword(modifiedData())
+                    var i=0;
+                    for ( ; i<dataInfoModel.count; ++i) {
+                        var role = dataInfoModel.get(i).descriptor
+                        if (role === "password") {
+                            break;
+                        }
+                    }
+                    textFieldRepeater.itemAt(i).text = password
+                }
             }
             Button {
                 text: qsTr(" OK ")
                 height: 30
                 style: PushButtonStyle {}
                 onClicked: {
-                    controler.setModifiedData(modifiedData())
+                    modifyControler.setModifiedData(accountList.currentRow, modifiedData(), dataInfoModel.getEditableRoles())
+                    viewControler.currentView = ViewControler.AccountList
                 }
             }
         }
@@ -92,64 +120,16 @@ Item {
 
     // Get modified data from input fields.
     function modifiedData() {
-        for (var i=0; i<translationModel.count; ++i) {
-            var modelKey = translationModel.get(i).descriptor
+        for (var i=0; i<dataInfoModel.count; ++i) {
+            if (dataInfoModel.get(i).editable !== true) {
+                continue
+            }
+            var modelKey = dataInfoModel.get(i).descriptor
             var value = textFieldRepeater.itemAt(i).text
             root.model[modelKey] = value
         }
 
         return root.model
-    }
-
-    // List model to get a field name and the key (descriptor) to the value.
-    ListModel {
-        id: translationModel
-
-        ListElement {
-            name: "Id"
-            descriptor: "id"
-            editable: false
-        }
-        ListElement {
-            name: "Provider"
-            descriptor: "provider"
-            editable: true
-        }
-        ListElement {
-            name: "Benutzername"
-            descriptor: "username"
-            editable: true
-        }
-        ListElement {
-            name: "Passwort"
-            descriptor: "password"
-            editable: true
-        }
-        ListElement {
-            name: "Length"
-            descriptor: "passwordlength"
-            editable: true
-        }
-        ListElement {
-            name: "Frage"
-            descriptor: "question"
-            editable: true
-        }
-        ListElement {
-            name: "Antwort"
-            descriptor: "answer"
-            editable: true
-        }
-        ListElement {
-            name: "Zeichensatz"
-            descriptor: "definedcharacter"
-            editable: true
-        }
-        ListElement {
-            name: "Letzte Änderung"
-            descriptor: "lastmodify"
-            editable: false
-        }
     }
 }
 

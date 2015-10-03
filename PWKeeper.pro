@@ -4,10 +4,15 @@ QT += qml quick widgets sql
 
 SOURCES += main.cpp \
     tablemodel.cpp \
-    controler.cpp \
     persistence.cpp \
     account.cpp \
-    sqlexception.cpp
+    sqlexception.cpp \
+    listviewcontroler.cpp \
+    viewcontroler.cpp \
+    modifycontroler.cpp \
+    pwgenerator.cpp \
+    characterdefinition.cpp \
+    showcontroler.cpp
 
 RESOURCES += qml.qrc \
     pictures.qrc
@@ -20,9 +25,14 @@ include(deployment.pri)
 
 HEADERS += \
     tablemodel.h \
-    controler.h \
     persistence.h \
     account.h \
-    sqlexception.h
+    sqlexception.h \
+    listviewcontroler.h \
+    viewcontroler.h \
+    modifycontroler.h \
+    pwgenerator.h \
+    characterdefinition.h \
+    showcontroler.h
 
 DISTFILES +=

@@ -5,6 +5,11 @@ import Models 1.0
 
 Item {
 
+    ListViewControler {
+        id: listViewControler
+        model: tableModel
+    }
+
     property alias currentRow: tableView.currentRow
 
     // ---------------------------------------------------
@@ -62,36 +67,36 @@ Item {
                 height: 30
                 text: qsTr("+")
                 style: PushButtonStyle {}
-                visible: controler.currentView === PWKeeperControler.AccountList
+                visible: viewControler.currentView === ViewControler.AccountList
             }
             Button {
                 width: 30
                 height: 30
                 text: qsTr("-")
                 style: PushButtonStyle {}
-                visible: (controler.currentView === PWKeeperControler.AccountList) && tableView.currentRow >= 0
-                onClicked: controler.deleteModelRow(tableView.currentRow)
+                visible: (viewControler.currentView === ViewControler.AccountList) && tableView.currentRow >= 0
+                onClicked: listViewControler.deleteModelRow(tableView.currentRow)
             }
             Button {
                 height: 30
                 text: qsTr("Show")
-                visible: (controler.currentView === PWKeeperControler.AccountList) && tableView.currentRow >= 0
+                visible: (viewControler.currentView === ViewControler.AccountList) && tableView.currentRow >= 0
                 style: PushButtonStyle {}
-                onClicked: controler.currentView = PWKeeperControler.ShowAccount
+                onClicked: viewControler.currentView = ViewControler.ShowAccount
             }
             Button {
                 height: 30
                 text: qsTr("Modify")
                 style: PushButtonStyle {}
-                visible: (controler.currentView === PWKeeperControler.AccountList) && tableView.currentRow >= 0
-                onClicked: controler.currentView = PWKeeperControler.ModifyAccount
+                visible: (viewControler.currentView === ViewControler.AccountList) && tableView.currentRow >= 0
+                onClicked: viewControler.currentView = ViewControler.ModifyAccount
             }
             Button {
                 height: 30
                 text: qsTr("Password")
                 onClicked: controler.copyPasswordToClipboard(tableView.currentRow)
                 style: PushButtonStyle {}
-                visible: (controler.currentView === PWKeeperControler.AccountList) && tableView.currentRow >= 0
+                visible: (viewControler.currentView === ViewControler.AccountList) && tableView.currentRow >= 0
             }
             Button {
                 height: 30
@@ -103,7 +108,7 @@ Item {
                 height: 30
                 text: qsTr("Save")
                 style: PushButtonStyle {}
-                visible: controler.dataModified
+                visible: tableModel.isModified
             }
         } // END - Row (controlBarButtonRow)
     } // END - ControlBar (Rectangle)

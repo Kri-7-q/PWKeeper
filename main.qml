@@ -14,9 +14,8 @@ ApplicationWindow {
         id: tableModel
     }
 
-    PWKeeperControler {
-        id: controler
-        model: tableModel
+    ViewControler {
+        id: viewControler
     }
 
     Item {
@@ -63,11 +62,6 @@ ApplicationWindow {
                 left: parent.left
                 right: parent.right
             }
-            onVisibleChanged: {
-                if (visible === true) {
-                    model = controler.modelRowEntry(accountList.currentRow)
-                }
-            }
         }
 
         // Dialog to show an account
@@ -81,10 +75,68 @@ ApplicationWindow {
                 left: parent.left
                 right: parent.right
             }
-            onVisibleChanged: {
-                if (visible === true) {
-                    model = controler.modelRowEntry(accountList.currentRow)
+        }
+
+        // List model to get a field name and the key (descriptor) to the value.
+        ListModel {
+            id: dataInfoModel
+
+            ListElement {
+                name: "Id"
+                descriptor: "id"
+                editable: false
+            }
+            ListElement {
+                name: "Provider"
+                descriptor: "provider"
+                editable: true
+            }
+            ListElement {
+                name: "Benutzername"
+                descriptor: "username"
+                editable: true
+            }
+            ListElement {
+                name: "Passwort"
+                descriptor: "password"
+                editable: true
+            }
+            ListElement {
+                name: "Length"
+                descriptor: "passwordlength"
+                editable: true
+            }
+            ListElement {
+                name: "Frage"
+                descriptor: "question"
+                editable: true
+            }
+            ListElement {
+                name: "Antwort"
+                descriptor: "answer"
+                editable: true
+            }
+            ListElement {
+                name: "Zeichensatz"
+                descriptor: "definedcharacter"
+                editable: true
+            }
+            ListElement {
+                name: "Letzte Änderung"
+                descriptor: "lastmodify"
+                editable: false
+            }
+
+            // Find editable data and get a list of their model roles.
+            function getEditableRoles() {
+                var list = []
+                for (var i=0; i<count; ++i) {
+                    if (get(i).editable) {
+                        list.push(get(i).descriptor)
+                    }
                 }
+
+                return list
             }
         }
 
@@ -93,21 +145,21 @@ ApplicationWindow {
         states: [
             State {
                 // State:   ShowList
-                when: controler.currentView === PWKeeperControler.AccountList
+                when: viewControler.currentView === ViewControler.AccountList
                 PropertyChanges { target: accountList; visible: true }
                 PropertyChanges { target: modifyDialog; visible: false }
                 PropertyChanges { target: showDialog; visible: false }
             },
             State {
                 // State:   ModifyAccount
-                when: controler.currentView === PWKeeperControler.ModifyAccount
+                when: viewControler.currentView === ViewControler.ModifyAccount
                 PropertyChanges { target: accountList; visible: false }
                 PropertyChanges { target: modifyDialog; visible: true; }
                 PropertyChanges { target: showDialog; visible: false }
             },
             State {
                 // State:   ShowAccount
-                when: controler.currentView === PWKeeperControler.ShowAccount
+                when: viewControler.currentView === ViewControler.ShowAccount
                 PropertyChanges { target: accountList; visible: false }
                 PropertyChanges { target: modifyDialog; visible: false; }
                 PropertyChanges { target: showDialog; visible: true }
