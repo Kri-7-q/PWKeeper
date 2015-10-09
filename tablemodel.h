@@ -16,8 +16,8 @@ public:
     explicit TableModel(QObject *parent = 0);
 
     enum Roles { IdRole = Qt::UserRole, ProviderRole, UsernameRole, PasswordRole, LengthRole, DefinedCharacterRole,
-                 AnswerRole, QuestionRole, LastModifyRole };
-    enum ModelRowState { Origin, Modified, Deleted };
+                 AnswerRole, QuestionRole, LastModifyRole, StateRole };
+    enum ModelRowState { Origin, Modified, Deleted, NEW };
 
 signals:
     void isModifiedChanged();

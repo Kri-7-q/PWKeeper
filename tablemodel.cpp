@@ -14,6 +14,7 @@ TableModel::TableModel(QObject *parent) :
     m_roles.insert(AnswerRole, QString("answer").toLocal8Bit());
     m_roles.insert(QuestionRole, QString("question").toLocal8Bit());
     m_roles.insert(LastModifyRole, QString("lastmodify").toLocal8Bit());
+    m_roles.insert(StateRole, QString("state").toLocal8Bit());
 }
 
 // Override

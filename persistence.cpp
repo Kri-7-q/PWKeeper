@@ -6,7 +6,7 @@
 Persistence::Persistence() :
     m_primaryKey(QString("id")),
     m_uniqueKey(QStringList() << QString("provider") << QString("username")),
-    m_tableName("account")
+    m_tableName("accountlist")
 {
     QSqlDatabase db = QSqlDatabase::addDatabase("QPSQL", "local");
     db.setDatabaseName(QString("pwmanager"));

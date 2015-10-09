@@ -96,14 +96,9 @@ Item {
                 style: PushButtonStyle {}
                 onClicked: {
                     var password = modifyControler.generatePassword(modifiedData())
-                    var i=0;
-                    for ( ; i<dataInfoModel.count; ++i) {
-                        var role = dataInfoModel.get(i).descriptor
-                        if (role === "password") {
-                            break;
-                        }
-                    }
-                    textFieldRepeater.itemAt(i).text = password
+                    var tempModel = model
+                    tempModel["password"] = password
+                    model = tempModel
                 }
             }
             Button {
