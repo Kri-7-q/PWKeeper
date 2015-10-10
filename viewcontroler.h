@@ -12,7 +12,7 @@ class ViewControler : public QObject
 public:
     explicit ViewControler(QObject *parent = 0);
 
-    enum AppView { AccountList, ModifyAccount, ShowAccount };
+    enum AppView { AccountList, ModifyAccount, ShowAccount, NewAccount };
 
     AppView currentView() const;
     void setCurrentView(const AppView &currentView);

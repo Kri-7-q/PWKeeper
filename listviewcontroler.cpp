@@ -1,26 +1,10 @@
 #include "listviewcontroler.h"
 
 ListViewControler::ListViewControler(QObject *parent) :
-    QObject(parent),
-    m_pModel(NULL)
+    Controller(parent)
 {
     m_persistentData = m_database.readWholeTable(m_database.tableName());
-}
-
-// Getter
-TableModel *ListViewControler::model() const
-{
-    return m_pModel;
-}
-
-// Setter
-void ListViewControler::setModel(TableModel *pModel)
-{
-    if (m_pModel != pModel) {
-        m_pModel = pModel;
-        m_pModel->resetContent(&m_persistentData);
-        emit modelChanged();
-    }
+    connect(this, SIGNAL(modelChanged()), this, SLOT(setModelContent()));
 }
 
 /**
@@ -30,6 +14,15 @@ void ListViewControler::setModel(TableModel *pModel)
  */
 void ListViewControler::deleteModelRow(const int row) const
 {
-    m_pModel->setData(m_pModel->index(row), QVariant(TableModel::Deleted), QString("state"));
+    m_pModel->setData(m_pModel->index(row), QVariant(TableModel::Deleted), TableModel::StateRole);
+}
+
+/**
+ * Slot
+ * Is called when a model is set to the controler.
+ */
+void ListViewControler::setModelContent()
+{
+    m_pModel->resetContent(&m_persistentData);
 }
 

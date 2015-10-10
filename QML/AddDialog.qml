@@ -3,25 +3,20 @@ import QtQuick.Controls 1.2
 import Controllers 1.0
 
 Item {
-    id:root
+    id: root
 
-    ModifyController {
-        id: modifyController
+    AddController {
+        id: addController
         model: tableModel
     }
 
-    onVisibleChanged: {
-        if (visible === true) {
-            model = modifyController.modelRowEntry(accountList.currentRow)
-        }
-    }
-
     property int descriptionWidth: width / 3
-    property var model: {"id":"none", "provider":"none", "username":"none", "password":"none", "question":"none",
-                         "answer":"none", "definedcharacter":"none", "lastmodify":"none", "passwordlength":"none"}
+    property var model: {"id":"", "provider":"", "username":"", "password":"", "question":"",
+                         "answer":"", "definedcharacter":"*[A-Z]*[a-z]*[0-9]*{()<>!$%&/=?+*#-.,;:_}",
+                         "lastmodify":"", "passwordlength":"12"}
     property string fontFamily: "Arial"
     property int fontSize: 16
-    property int fontWeigth: Font.Normal
+    property int fontWeight: Font.Normal
 
     // ---------------------------------------------------------------
     // TextField controls to modify an account
@@ -46,35 +41,27 @@ Item {
                 property alias text: entryTextField.text
 
                 Text {
-                    width: root.descriptionWidth
+                    width: descriptionWidth
                     text: name
+                    visible: editable
                     font {
                         family: root.fontFamily
                         pixelSize: root.fontSize
-                        bold: true
+                        weight: Font.Bold
                     }
                 }
+
                 TextField {
                     id: entryTextField
                     width: root.width - entryRow.spacing - root.descriptionWidth - entryColumn.anchors.margins * 2
                     text: root.model[roleName]
                     placeholderText: placeHolder
+                    font {
+                        family: root.fontFamily
+                        pixelSize: root.fontSize
+                        weight: root.fontWeight
+                    }
                     visible: editable
-                    font {
-                        family: root.fontFamily
-                        pixelSize: root.fontSize
-                        weight: root.fontWeigth
-                    }
-                }
-                Text {
-                    id: entryText
-                    text: root.model[roleName]
-                    visible: !editable
-                    font {
-                        family: root.fontFamily
-                        pixelSize: root.fontSize
-                        weight: root.fontWeigth
-                    }
                 }
             }
         }
@@ -107,7 +94,8 @@ Item {
                 height: 30
                 style: PushButtonStyle {}
                 onClicked: {
-                    var password = modifyController.generatePassword(modifiedData())
+                    model = insertedData()
+                    var password = addController.generatePassword(model)
                     var tempModel = model
                     tempModel["password"] = password
                     model = tempModel
@@ -118,25 +106,27 @@ Item {
                 height: 30
                 style: PushButtonStyle {}
                 onClicked: {
-                    modifyController.setModifiedData(accountList.currentRow, modifiedData(), dataInfoModel.getEditableRoles())
+                    addController.insertNewData(insertedData(), dataInfoModel.getEditableRoles());
                     viewController.currentView = ViewController.AccountList
                 }
             }
         }
     }
 
-    // Get modified data from input fields.
-    function modifiedData() {
+    // Get inserted data from input fields.
+    function insertedData() {
+        var data = {}
         for (var i=0; i<dataInfoModel.count; ++i) {
             if (dataInfoModel.get(i).editable !== true) {
                 continue
             }
             var modelKey = dataInfoModel.get(i).roleName
             var value = textFieldRepeater.itemAt(i).text
-            root.model[modelKey] = value
+            data[modelKey] = value
         }
 
-        return root.model
+        return data
     }
+
 }
 

@@ -10,5 +10,6 @@
         <file>ModifyDialog.qml</file>
         <file>ShowDialog.qml</file>
         <file>AccountList.qml</file>
+        <file>AddDialog.qml</file>
     </qresource>
 </RCC>

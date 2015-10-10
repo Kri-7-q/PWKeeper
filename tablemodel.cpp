@@ -134,6 +134,35 @@ void TableModel::setIsModified(bool isModified)
     }
 }
 
+// Overwrite
+bool TableModel::insertRows(int row, int count, const QModelIndex &parent)
+{
+    if (row < 0 || row > m_rowList.size()) {
+        return false;
+    }
+    beginInsertRows(parent, row, row + count);
+    for (int index=row; index<count; ++index) {
+        m_rowList.insert(index, QVariantMap());
+    }
+    endInsertRows();
+
+    return true;
+}
+
+/**
+ * Append a new row to the model.
+ * @return The number of newly appended row.
+ */
+int TableModel::appendRow()
+{
+    int row = m_rowList.size();
+    if (! insertRows(row, 1)) {
+        return -1;
+    }
+
+    return row;
+}
+
 /**
  * PRIVATE
  * Get a role name from model role.

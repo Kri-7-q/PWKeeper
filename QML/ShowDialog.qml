@@ -1,24 +1,27 @@
 import QtQuick 2.0
 import QtQuick.Controls 1.2
-import Controlers 1.0
+import Controllers 1.0
 
 Item {
     id: root
 
-    ShowControler {
-        id: showControler
+    ShowController {
+        id: showController
         model: tableModel
     }
 
     onVisibleChanged: {
         if (visible === true) {
-            model = showControler.modelRowEntry(accountList.currentRow)
+            model = showController.modelRowEntry(accountList.currentRow)
         }
     }
 
     property int descriptionWidth: width / 3
     property var model: {"id":"none", "provider":"none", "username":"none", "password":"none", "question":"none",
                          "answer":"none", "definedcharacter":"none", "lastmodify":"none", "passwordlength":"none"}
+    property string fontFamily: "Arial"
+    property int fontSize: 16
+    property int fontWeigth: Font.Normal
 
 
     // ----------------------------------------------------------
@@ -41,14 +44,19 @@ Item {
                 Text {
                     width: root.descriptionWidth
                     text: name
-                    font.bold: true
-                    font.family: "Arial"
-                    font.pixelSize: 16
+                    font {
+                        bold: true
+                        family: root.fontFamily
+                        pixelSize: root.fontSize
+                    }
                 }
                 Text {
-                    text: root.model[descriptor]
-                    font.family: "Arial"
-                    font.pixelSize: 16
+                    text: root.model[roleName]
+                    font {
+                        family: root.fontFamily
+                        pixelSize: root.fontSize
+                        weight: root.fontWeigth
+                    }
                 }
             }
         }
@@ -74,7 +82,7 @@ Item {
                 height: 30
                 text: qsTr(" Back ")
                 style: PushButtonStyle {}
-                onClicked: viewControler.currentView = ViewControler.AccountList
+                onClicked: viewController.currentView = ViewController.AccountList
             }
         }
     }

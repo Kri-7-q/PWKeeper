@@ -17,7 +17,7 @@ public:
 
     enum Roles { IdRole = Qt::UserRole, ProviderRole, UsernameRole, PasswordRole, LengthRole, DefinedCharacterRole,
                  AnswerRole, QuestionRole, LastModifyRole, StateRole };
-    enum ModelRowState { Origin, Modified, Deleted, NEW };
+    enum ModelRowState { Origin, Modified, Deleted, New };
 
 signals:
     void isModifiedChanged();
@@ -40,6 +40,8 @@ public:
     QVariantMap getRow(const int row) const;
     bool isModified() const;
     void setIsModified(bool isModified);
+    bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex());
+    int appendRow();
 
 private:
     QList<QVariantMap> m_rowList;

@@ -13,7 +13,10 @@ SOURCES += main.cpp \
     Generator/characterdefinition.cpp \
     showcontroler.cpp \
     Persistence/persistence.cpp \
-    Persistence/credentials.cpp
+    Persistence/credentials.cpp \
+    addcontroler.cpp \
+    insertationcontroller.cpp \
+    controller.cpp
 
 RESOURCES += QML/qml.qrc \
              QML/pictures.qrc
@@ -35,6 +38,9 @@ HEADERS += \
     Generator/characterdefinition.h \
     showcontroler.h \
     Persistence/persistence.h \
-    Persistence/credentials.h
+    Persistence/credentials.h \
+    addcontroler.h \
+    insertationcontroller.h \
+    controller.h
 
 DISTFILES +=
