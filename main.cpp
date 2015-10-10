@@ -4,6 +4,7 @@
 #include "viewcontroler.h"
 #include "modifycontroler.h"
 #include "showcontroler.h"
+#include "Persistence/credentials.h"
 
 int main(int argc, char *argv[])
 {

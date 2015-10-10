@@ -1,4 +1,5 @@
 #include "persistence.h"
+#include "credentials.h"
 
 /**
  * Constructor
@@ -9,11 +10,7 @@ Persistence::Persistence() :
     m_tableName("accountlist")
 {
     QSqlDatabase db = QSqlDatabase::addDatabase("QPSQL", "local");
-    db.setDatabaseName(QString("pwmanager"));
-    db.setHostName(QString("localhost"));
-    db.setPassword(QString("kri-7-q"));
-    db.setUserName(QString("christian"));
-    db.setPort(3306);
+    initializeDatabase(db);
 }
 
 /**
@@ -210,5 +207,21 @@ QList<QVariantMap> Persistence::getAccountList(QSqlQuery &query) const
     }
 
     return list;
+}
+
+/**
+ * Initialize database with Credentials from a file.
+ * @param db
+ */
+void Persistence::initializeDatabase(QSqlDatabase &db) const
+{
+    QString homePath = Credentials::usersHomePath();
+    QString filePath = homePath.append("/.pwmanager");
+    Credentials credentials = Credentials::credentialsFromFile(filePath);
+    db.setDatabaseName(credentials.value(Credentials::DatabaseName));
+    db.setHostName(credentials.value(Credentials::Hostname));
+    db.setUserName(credentials.value(Credentials::Username));
+    db.setPassword(credentials.value(Credentials::Password));
+    db.setPort(credentials.value(Credentials::Port).toInt());
 }
 

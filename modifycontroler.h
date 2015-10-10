@@ -2,7 +2,7 @@
 #define MODIFYCONTROLER_H
 
 #include "tablemodel.h"
-#include "pwgenerator.h"
+#include "Generator/pwgenerator.h"
 
 class ModifyControler : public QObject
 {

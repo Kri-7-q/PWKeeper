@@ -1,7 +1,7 @@
 #ifndef PERSISTENCE_H
 #define PERSISTENCE_H
 
-#include "sqlexception.h"
+#include "Exception/sqlexception.h"
 #include <QStringList>
 #include <QSqlDatabase>
 #include <QSqlQuery>
@@ -33,6 +33,7 @@ private:
     QString getQueryColumnString(const QVariantMap &searchObject) const;
     QString getQueryColumnString(const QStringList &columnList) const;
     QList<QVariantMap> getAccountList(QSqlQuery &query) const;
+    void initializeDatabase(QSqlDatabase &db) const;
 };
 
 #endif // PERSISTENCE_H

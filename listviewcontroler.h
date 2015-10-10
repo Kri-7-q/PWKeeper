@@ -1,7 +1,7 @@
 #ifndef LISTVIEWCONTROLER_H
 #define LISTVIEWCONTROLER_H
 
-#include "persistence.h"
+#include "Persistence/persistence.h"
 #include "tablemodel.h"
 
 class ListViewControler : public QObject

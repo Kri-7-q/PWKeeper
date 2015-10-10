@@ -4,18 +4,19 @@ QT += qml quick widgets sql
 
 SOURCES += main.cpp \
     tablemodel.cpp \
-    persistence.cpp \
     account.cpp \
-    sqlexception.cpp \
+    Exception/sqlexception.cpp \
     listviewcontroler.cpp \
     viewcontroler.cpp \
     modifycontroler.cpp \
-    pwgenerator.cpp \
-    characterdefinition.cpp \
-    showcontroler.cpp
+    Generator/pwgenerator.cpp \
+    Generator/characterdefinition.cpp \
+    showcontroler.cpp \
+    Persistence/persistence.cpp \
+    Persistence/credentials.cpp
 
-RESOURCES += qml.qrc \
-    pictures.qrc
+RESOURCES += QML/qml.qrc \
+             QML/pictures.qrc
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =
@@ -25,14 +26,15 @@ include(deployment.pri)
 
 HEADERS += \
     tablemodel.h \
-    persistence.h \
     account.h \
-    sqlexception.h \
+    Exception/sqlexception.h \
     listviewcontroler.h \
     viewcontroler.h \
     modifycontroler.h \
-    pwgenerator.h \
-    characterdefinition.h \
-    showcontroler.h
+    Generator/pwgenerator.h \
+    Generator/characterdefinition.h \
+    showcontroler.h \
+    Persistence/persistence.h \
+    Persistence/credentials.h
 
 DISTFILES +=
