@@ -11,7 +11,6 @@ SOURCES += main.cpp \
     modifycontroler.cpp \
     Generator/pwgenerator.cpp \
     Generator/characterdefinition.cpp \
-    showcontroler.cpp \
     Persistence/persistence.cpp \
     Persistence/credentials.cpp \
     addcontroler.cpp \
@@ -36,7 +35,6 @@ HEADERS += \
     modifycontroler.h \
     Generator/pwgenerator.h \
     Generator/characterdefinition.h \
-    showcontroler.h \
     Persistence/persistence.h \
     Persistence/credentials.h \
     addcontroler.h \

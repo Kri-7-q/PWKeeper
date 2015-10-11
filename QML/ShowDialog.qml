@@ -5,20 +5,19 @@ import Controllers 1.0
 Item {
     id: root
 
-    ShowController {
+    DialogController {
         id: showController
         model: tableModel
     }
 
     onVisibleChanged: {
         if (visible === true) {
-            model = showController.modelRowEntry(accountList.currentRow)
+            modelRow = accountList.currentRow
         }
     }
 
     property int descriptionWidth: width / 3
-    property var model: {"id":"none", "provider":"none", "username":"none", "password":"none", "question":"none",
-                         "answer":"none", "definedcharacter":"none", "lastmodify":"none", "passwordlength":"none"}
+    property int modelRow: 0
     property string fontFamily: "Arial"
     property int fontSize: 16
     property int fontWeigth: Font.Normal
@@ -51,7 +50,7 @@ Item {
                     }
                 }
                 Text {
-                    text: root.model[roleName]
+                    text: tableModel.data(root.modelRow, roleName) //root.model[roleName]
                     font {
                         family: root.fontFamily
                         pixelSize: root.fontSize

@@ -3,7 +3,6 @@
 #include "listviewcontroler.h"
 #include "viewcontroler.h"
 #include "modifycontroler.h"
-#include "showcontroler.h"
 #include "addcontroler.h"
 
 int main(int argc, char *argv[])
@@ -14,7 +13,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<ListViewControler>("Controllers", 1, 0, "ListViewController");
     qmlRegisterType<ViewControler>("Controllers", 1, 0, "ViewController");
     qmlRegisterType<ModifyControler>("Controllers", 1, 0, "ModifyController");
-    qmlRegisterType<ShowControler>("Controllers", 1, 0, "ShowController");
+    qmlRegisterType<Controller>("Controllers", 1, 0, "DialogController");
     qmlRegisterType<AddControler>("Controllers", 1, 0, "AddController");
 
     QQmlApplicationEngine engine;

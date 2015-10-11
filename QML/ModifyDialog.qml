@@ -12,13 +12,12 @@ Item {
 
     onVisibleChanged: {
         if (visible === true) {
-            model = modifyController.modelRowEntry(accountList.currentRow)
+            modelRow = accountList.currentRow
         }
     }
 
     property int descriptionWidth: width / 3
-    property var model: {"id":"none", "provider":"none", "username":"none", "password":"none", "question":"none",
-                         "answer":"none", "definedcharacter":"none", "lastmodify":"none", "passwordlength":"none"}
+    property int modelRow: 0
     property string fontFamily: "Arial"
     property int fontSize: 16
     property int fontWeigth: Font.Normal
@@ -57,7 +56,7 @@ Item {
                 TextField {
                     id: entryTextField
                     width: root.width - entryRow.spacing - root.descriptionWidth - entryColumn.anchors.margins * 2
-                    text: root.model[roleName]
+                    text: tableModel.data(modelRow, roleName)
                     placeholderText: placeHolder
                     visible: editable
                     font {
@@ -68,7 +67,7 @@ Item {
                 }
                 Text {
                     id: entryText
-                    text: root.model[roleName]
+                    text: tableModel.data(modelRow, roleName)
                     visible: !editable
                     font {
                         family: root.fontFamily
@@ -106,12 +105,7 @@ Item {
                 text: qsTr("Generate Password")
                 height: 30
                 style: PushButtonStyle {}
-                onClicked: {
-                    var password = modifyController.generatePassword(modifiedData())
-                    var tempModel = model
-                    tempModel["password"] = password
-                    model = tempModel
-                }
+                onClicked: generatePassword()
             }
             Button {
                 text: qsTr(" OK ")
@@ -127,16 +121,30 @@ Item {
 
     // Get modified data from input fields.
     function modifiedData() {
+        var data = {}
         for (var i=0; i<dataInfoModel.count; ++i) {
             if (dataInfoModel.get(i).editable !== true) {
                 continue
             }
             var modelKey = dataInfoModel.get(i).roleName
             var value = textFieldRepeater.itemAt(i).text
-            root.model[modelKey] = value
+            data[modelKey] = value
         }
 
-        return root.model
+        return data
+    }
+
+    // Generate a new password and set it into text field.
+    function generatePassword() {
+        var password = modifyController.generatePassword(modifiedData())
+        var index = 0
+        for ( ; index<dataInfoModel.count; ++index) {
+            var role = dataInfoModel.get(index).roleName
+            if (role === "password") {
+                break
+            }
+        }
+        textFieldRepeater.itemAt(index).text = password
     }
 }
 

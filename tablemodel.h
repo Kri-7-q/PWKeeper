@@ -25,6 +25,7 @@ signals:
 public slots:
     TableModel::ModelRowState modelRowState(const int row) const;
     QString modelRoleName(int role) const;
+    QVariant data(const int row, const QString &role) const;
 
 public:
     // QAbstractItemModel interface
@@ -41,7 +42,7 @@ public:
     bool isModified() const;
     void setIsModified(bool isModified);
     bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex());
-    int appendRow();
+    int appendRow(const QVariantMap &entry);
 
 private:
     QList<QVariantMap> m_rowList;

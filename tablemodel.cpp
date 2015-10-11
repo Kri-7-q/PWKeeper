@@ -41,7 +41,7 @@ QVariant TableModel::data(const QModelIndex &index, const QString &key) const
         return QVariant();
     }
 
-    return m_rowList[index.row()].value(key);
+    return m_rowList[index.row()].value(key, QVariant(QString()));
 }
 
 // Override
@@ -151,14 +151,18 @@ bool TableModel::insertRows(int row, int count, const QModelIndex &parent)
 
 /**
  * Append a new row to the model.
- * @return The number of newly appended row.
+ * Append the QVariantMap to the model.
+ * @param entry     The data of a Account object.
+ * @return row      The number of newly appended row.
  */
-int TableModel::appendRow()
+int TableModel::appendRow(const QVariantMap &entry)
 {
     int row = m_rowList.size();
-    if (! insertRows(row, 1)) {
-        return -1;
-    }
+    QModelIndex index = this->index(row);
+    beginInsertRows(index, row, row);
+    m_rowList << entry;
+    endInsertRows();
+    setIsModified(true);
 
     return row;
 }
@@ -175,4 +179,18 @@ QString TableModel::modelRoleName(int role) const
     QByteArray roleNameArray = m_roles.value(role);
 
     return QString(roleNameArray);
+}
+
+/**
+ * Slot
+ * Overload of function.
+ * @param row       The number of row in model.
+ * @param role      The display role name.
+ * @return          A QVariant containing the data or an empty QVariant.
+ */
+QVariant TableModel::data(const int row, const QString &role) const
+{
+    QModelIndex index = this->index(row);
+
+    return data(index, role);
 }

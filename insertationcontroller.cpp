@@ -3,7 +3,6 @@
 InsertationController::InsertationController(QObject *parent) :
     Controller(parent)
 {
-
 }
 
 
@@ -45,18 +44,10 @@ void InsertationController::setModifiedData(const int row, const QVariantMap mod
  * @param newData       A map with inserted data.
  * @param roleList      A list of model roles (Keys of the QVariantMap).
  */
-void InsertationController::insertNewData(const QVariantMap newData, const QStringList roleList)
+void InsertationController::insertNewData(const QVariantMap newData)
 {
-    int row = m_pModel->appendRow();
-    if (row < 0) {
-        qDebug() << "Could not append new model row !";
-        return;
-    }
+    int row = m_pModel->appendRow(newData);
     QModelIndex index = m_pModel->index(row);
-    foreach (QString role, roleList) {
-        QVariant value = newData.value(role);
-        m_pModel->setData(index, value, role);
-    }
     m_pModel->setData(index, QVariant(TableModel::New), TableModel::StateRole);
 }
 

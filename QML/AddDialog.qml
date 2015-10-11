@@ -11,9 +11,7 @@ Item {
     }
 
     property int descriptionWidth: width / 3
-    property var model: {"id":"", "provider":"", "username":"", "password":"", "question":"",
-                         "answer":"", "definedcharacter":"*[A-Z]*[a-z]*[0-9]*{()<>!$%&/=?+*#-.,;:_}",
-                         "lastmodify":"", "passwordlength":"12"}
+    property var model: addController.dialogModel
     property string fontFamily: "Arial"
     property int fontSize: 16
     property int fontWeight: Font.Normal
@@ -93,21 +91,16 @@ Item {
                 text: qsTr("Generate Password")
                 height: 30
                 style: PushButtonStyle {}
-                onClicked: {
-                    model = insertedData()
-                    var password = addController.generatePassword(model)
-                    var tempModel = model
-                    tempModel["password"] = password
-                    model = tempModel
-                }
+                onClicked: generatePassword()
             }
             Button {
                 text: qsTr(" OK ")
                 height: 30
                 style: PushButtonStyle {}
                 onClicked: {
-                    addController.insertNewData(insertedData(), dataInfoModel.getEditableRoles());
+                    addController.insertNewData(insertedData());
                     viewController.currentView = ViewController.AccountList
+                    model = addController.dialogModel
                 }
             }
         }
@@ -115,18 +108,29 @@ Item {
 
     // Get inserted data from input fields.
     function insertedData() {
-        var data = {}
         for (var i=0; i<dataInfoModel.count; ++i) {
-            if (dataInfoModel.get(i).editable !== true) {
+            if (!dataInfoModel.get(i).editable) {
                 continue
             }
             var modelKey = dataInfoModel.get(i).roleName
             var value = textFieldRepeater.itemAt(i).text
-            data[modelKey] = value
+            root.model[modelKey] = value
         }
 
-        return data
+        return root.model
     }
 
+    // Get a new password and set it into text field.
+    function generatePassword() {
+        var password = addController.generatePassword(insertedData())
+        var index = 0;
+        for ( ; index<dataInfoModel.count; ++index) {
+            var role = dataInfoModel.get(index).roleName
+            if (role === "password") {
+                break;
+            }
+        }
+        textFieldRepeater.itemAt(index).text = password
+    }
 }
 
