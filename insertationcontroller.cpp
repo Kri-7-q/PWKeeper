@@ -20,18 +20,8 @@ InsertationController::InsertationController(QObject *parent) :
  */
 void InsertationController::setModifiedData(const int row, const QVariantMap modifiedData, const QStringList roleList)
 {
-    bool hasModifications = false;
     QModelIndex index = m_pModel->index(row);
-    foreach (QString role, roleList) {
-        QVariant value = modifiedData.value(role, QVariant());
-        QVariant original = m_pModel->data(index, role);
-        if (value.convert(original.type())) {
-            if (value != original) {
-                m_pModel->setData(index, value, role);
-                hasModifications = true;
-            }
-        }
-    }
+    bool hasModifications = insertModifiedData(index, modifiedData, roleList);
     // Mark model row as modified if data was realy modified.
     if (hasModifications) {
         m_pModel->setData(index, QVariant(TableModel::Modified), TableModel::StateRole);
@@ -44,10 +34,10 @@ void InsertationController::setModifiedData(const int row, const QVariantMap mod
  * @param newData       A map with inserted data.
  * @param roleList      A list of model roles (Keys of the QVariantMap).
  */
-void InsertationController::insertNewData(const QVariantMap newData)
+void InsertationController::insertNewData(const int row, const QVariantMap newData, const QStringList roleList)
 {
-    int row = m_pModel->appendRow(newData);
     QModelIndex index = m_pModel->index(row);
+    insertModifiedData(index, newData, roleList);
     m_pModel->setData(index, QVariant(TableModel::New), TableModel::StateRole);
 }
 
@@ -67,4 +57,29 @@ QString InsertationController::generatePassword(const QVariantMap account) const
     PwGenerator generator;
 
     return generator.passwordFromDefinition(length, definition);
+}
+
+/**
+ * Private
+ * Insert modified data into the model.
+ * @param row               The models row where the data is to insert.
+ * @param modifiedData      A QVariantMap with data of a model row.
+ * @param roleList          The list with all used model role names.
+ * @return hasModificatons  True if model was modified.
+ */
+bool InsertationController::insertModifiedData(const QModelIndex &index, const QVariantMap &modifiedData, const QStringList &roleList) const
+{
+    bool hasModifications = false;
+    foreach (QString role, roleList) {
+        QVariant value = modifiedData.value(role, QVariant());
+        QVariant original = m_pModel->data(index, role);
+        if (value.convert(original.type())) {
+            if (value != original) {
+                m_pModel->setData(index, value, role);
+                hasModifications = true;
+            }
+        }
+    }
+
+    return hasModifications;
 }

@@ -42,7 +42,7 @@ public:
     bool isModified() const;
     void setIsModified(bool isModified);
     bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex());
-    int appendRow(const QVariantMap &entry);
+    int appendEmptyRow(const QVariantMap& standardData = QVariantMap());
 
 private:
     QList<QVariantMap> m_rowList;

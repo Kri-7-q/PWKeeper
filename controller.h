@@ -18,7 +18,6 @@ signals:
     void modelChanged();
 
 public slots:
-    QVariantMap modelRowEntry(const int row) const;
 
 protected:
     TableModel* m_pModel;

@@ -68,7 +68,7 @@ Item {
                 text: qsTr("+")
                 style: PushButtonStyle {}
                 visible: viewController.currentView === ViewController.AccountList
-                onClicked: viewController.currentView = ViewController.NewAccount
+                onClicked: addDialog.initializeAddDialog()
             }
             Button {
                 width: 30

@@ -29,15 +29,3 @@ TableModel *Controller::model() const
 {
     return m_pModel;
 }
-
-/**
- * Slot
- * Get the whole row entry of a model.
- * @param row       The nummer of row which is requested.
- * @return          A QVariantMap with a model entry.
- */
-QVariantMap Controller::modelRowEntry(const int row) const
-{
-    return m_pModel->getRow(row);
-}
-

@@ -3,33 +3,21 @@
 AddControler::AddControler(QObject *parent) :
     InsertationController(parent)
 {
-    initializeDialogModel();
+
 }
 
 
 /**
-  * Property
-  * Get an emty model for dialog controls.
-  * @return      A QVariantMap map with emty strings in QVariant objects
-  *              for each control in a dialog.
-  */
-QVariantMap AddControler::dialogModel() const
+ * Append an empty new row to the model.
+ * Should be called before open AddDialog.
+ * It ensures that the model can provide data for the text field in dialog.
+ * @return
+ */
+int AddControler::appendEmptyModelRow() const
 {
-    return m_dialogModel;
-}
+    QVariantMap emptyRow;
+    emptyRow.insert(m_pModel->modelRoleName(TableModel::LengthRole), QVariant(12));
+    emptyRow.insert(m_pModel->modelRoleName(TableModel::DefinedCharacterRole), QVariant(QString("*[A-Z]*[a-z]*[0-9]")));
 
-/**
-  * Private
-  * Initialize the model for dialog controls.
-  * Set an emty string to all values.
-  */
-void AddControler::initializeDialogModel()
-{
-    QStringList keyList;
-    keyList << "id" << "provider" << "username" << "password" << "question" << "answer" << "lastmodify";
-    foreach (QString key, keyList) {
-        m_dialogModel.insert(key, QVariant(QString()));
-    }
-    m_dialogModel.insert(QString("passwordlength"), QVariant(12));
-    m_dialogModel.insert(QString("definedcharacter"), QVariant(QString("*[A-Z]*[a-z]*[0-9]")));
+    return m_pModel->appendEmptyRow(emptyRow);
 }

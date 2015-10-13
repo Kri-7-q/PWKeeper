@@ -150,24 +150,6 @@ bool TableModel::insertRows(int row, int count, const QModelIndex &parent)
 }
 
 /**
- * Append a new row to the model.
- * Append the QVariantMap to the model.
- * @param entry     The data of a Account object.
- * @return row      The number of newly appended row.
- */
-int TableModel::appendRow(const QVariantMap &entry)
-{
-    int row = m_rowList.size();
-    QModelIndex index = this->index(row);
-    beginInsertRows(index, row, row);
-    m_rowList << entry;
-    endInsertRows();
-    setIsModified(true);
-
-    return row;
-}
-
-/**
  * PRIVATE
  * Get a role name from model role.
  * All role names are content of a hashmap.
@@ -193,4 +175,22 @@ QVariant TableModel::data(const int row, const QString &role) const
     QModelIndex index = this->index(row);
 
     return data(index, role);
+}
+
+/**
+ * Slot
+ * Insert an empty row into model.
+ * Should be called before add a new Account.
+ * @return          The number of the new row.
+ */
+int TableModel::appendEmptyRow(const QVariantMap &standardData)
+{
+    int row = m_rowList.size();
+    QModelIndex index = this->index(row);
+    beginInsertRows(index, row, row);
+    m_rowList << standardData;
+    endInsertRows();
+    setIsModified(true);
+
+    return row;
 }

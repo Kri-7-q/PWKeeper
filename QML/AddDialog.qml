@@ -11,7 +11,7 @@ Item {
     }
 
     property int descriptionWidth: width / 3
-    property var model: addController.dialogModel
+    property int modelRow: 0
     property string fontFamily: "Arial"
     property int fontSize: 16
     property int fontWeight: Font.Normal
@@ -52,7 +52,7 @@ Item {
                 TextField {
                     id: entryTextField
                     width: root.width - entryRow.spacing - root.descriptionWidth - entryColumn.anchors.margins * 2
-                    text: root.model[roleName]
+                    text: tableModel.data(modelRow, roleName)
                     placeholderText: placeHolder
                     font {
                         family: root.fontFamily
@@ -98,9 +98,8 @@ Item {
                 height: 30
                 style: PushButtonStyle {}
                 onClicked: {
-                    addController.insertNewData(insertedData());
+                    addController.insertNewData(modelRow, insertedData(), dataInfoModel.getEditableRoles())
                     viewController.currentView = ViewController.AccountList
-                    model = addController.dialogModel
                 }
             }
         }
@@ -108,16 +107,17 @@ Item {
 
     // Get inserted data from input fields.
     function insertedData() {
+        var data = {}
         for (var i=0; i<dataInfoModel.count; ++i) {
             if (!dataInfoModel.get(i).editable) {
                 continue
             }
             var modelKey = dataInfoModel.get(i).roleName
             var value = textFieldRepeater.itemAt(i).text
-            root.model[modelKey] = value
+            data[modelKey] = value
         }
 
-        return root.model
+        return data
     }
 
     // Get a new password and set it into text field.
@@ -131,6 +131,12 @@ Item {
             }
         }
         textFieldRepeater.itemAt(index).text = password
+    }
+
+    // Initialize dialog
+    function initializeAddDialog() {
+        modelRow = addController.appendEmptyModelRow()
+        viewController.currentView = ViewController.NewAccount
     }
 }
 

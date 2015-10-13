@@ -15,8 +15,11 @@ signals:
 
 public slots:
     void setModifiedData(const int row, const QVariantMap modifiedData, const QStringList roleList);
-    void insertNewData(const QVariantMap newData);
+    void insertNewData(const int row, const QVariantMap newData, const QStringList roleList);
     QString generatePassword(const QVariantMap account) const;
+
+protected:
+    bool insertModifiedData(const QModelIndex &index, const QVariantMap &modifiedData, const QStringList &roleList) const;
 };
 
 #endif // INSERTATIONCONTROLLER_H

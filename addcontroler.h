@@ -6,23 +6,14 @@
 class AddControler : public InsertationController
 {
     Q_OBJECT
-    Q_PROPERTY(QVariantMap dialogModel READ dialogModel NOTIFY dialogModelChanged)
 
 public:
     explicit AddControler(QObject *parent = 0);
 
-    QVariantMap dialogModel() const;
-
 signals:
-    void dialogModelChanged();
 
 public slots:
-
-protected:
-    QVariantMap m_dialogModel;
-
-    // Private methods
-    void initializeDialogModel();
+    int appendEmptyModelRow() const;
 };
 
 #endif // ADDCONTROLER_H
