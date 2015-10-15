@@ -15,6 +15,8 @@ signals:
 
 public slots:
     void deleteModelRow(const int row) const;
+
+private slots:
     void setModelContent();
 
 private:

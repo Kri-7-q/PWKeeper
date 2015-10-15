@@ -10,14 +10,22 @@ ListViewControler::ListViewControler(QObject *parent) :
 /**
  * Delete a row in the TableView model.
  * Marks a row as deleted in the model.
+ * If a row has model row state New than the row is deleted immediately.
  * @param row
  */
 void ListViewControler::deleteModelRow(const int row) const
 {
-    m_pModel->setData(m_pModel->index(row), QVariant(TableModel::Deleted), TableModel::StateRole);
+    QModelIndex index = m_pModel->index(row);
+    TableModel::ModelRowState state = (TableModel::ModelRowState)m_pModel->data(index, TableModel::StateRole).toInt();
+    if (state == TableModel::New) {
+        m_pModel->removeRow(row);
+    } else {
+        m_pModel->setData(index, QVariant(TableModel::Deleted), TableModel::StateRole);
+    }
 }
 
 /**
+ * Private
  * Slot
  * Is called when a model is set to the controler.
  */

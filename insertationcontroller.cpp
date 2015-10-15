@@ -23,7 +23,8 @@ void InsertationController::setModifiedData(const int row, const QVariantMap mod
     QModelIndex index = m_pModel->index(row);
     bool hasModifications = insertModifiedData(index, modifiedData, roleList);
     // Mark model row as modified if data was realy modified.
-    if (hasModifications) {
+    TableModel::ModelRowState state = (TableModel::ModelRowState)m_pModel->data(index, TableModel::StateRole).toInt();
+    if (hasModifications && state != TableModel::New) {
         m_pModel->setData(index, QVariant(TableModel::Modified), TableModel::StateRole);
     }
 }
@@ -60,7 +61,7 @@ QString InsertationController::generatePassword(const QVariantMap account) const
 }
 
 /**
- * Private
+ * Protected
  * Insert modified data into the model.
  * @param row               The models row where the data is to insert.
  * @param modifiedData      A QVariantMap with data of a model row.

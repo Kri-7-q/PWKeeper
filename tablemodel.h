@@ -30,7 +30,7 @@ public slots:
 public:
     // QAbstractItemModel interface
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
-    QVariant data(const QModelIndex &index, const int role) const;
+    QVariant data(const QModelIndex &index, int role) const;
     QVariant data(const QModelIndex &index, const QString &key) const;
     bool setData(const QModelIndex &index, const QVariant &value, int role = ProviderRole);
     bool setData(const QModelIndex &index, const QVariant &value, const QString &key);
@@ -43,6 +43,7 @@ public:
     void setIsModified(bool isModified);
     bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex());
     int appendEmptyRow(const QVariantMap& standardData = QVariantMap());
+    bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
 
 private:
     QList<QVariantMap> m_rowList;

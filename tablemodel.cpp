@@ -194,3 +194,30 @@ int TableModel::appendEmptyRow(const QVariantMap &standardData)
 
     return row;
 }
+
+/**
+ * Override
+ * Delete model rows.
+ * @param row           The first row which is to delete.
+ * @param count         The number of rows to delete.
+ * @param parent        The parent model index.
+ * @return              True if rows are deleted.
+ */
+bool TableModel::removeRows(int row, int count, const QModelIndex &parent)
+{
+    int firstRow = row;
+    int lastRow = row + count - 1;
+    if (firstRow < 0 || lastRow >= m_rowList.size()) {
+        qDebug() << "Model has: " << m_rowList.size() << "rows";
+        qDebug() << "Delete rows: " << firstRow << " to " << lastRow;
+        qDebug() << "Cannot execute !";
+        return false;
+    }
+    beginRemoveRows(parent, firstRow, lastRow);
+    for (int i=0; i<count; ++i) {
+        m_rowList.removeAt(row);
+    }
+    endRemoveRows();
+
+    return true;
+}
