@@ -1,5 +1,7 @@
 #include "persistence.h"
 #include "credentials.h"
+#include "tablemodel.h"
+#include <QSqlField>
 
 /**
  * Constructor
@@ -70,6 +72,7 @@ QStringList Persistence::getColumnNames(const QString tableName) const
     }
     QSqlRecord record = db.record(tableName);
     if (record.isEmpty()) {
+        db.close();
         throw SqlException(QString("could not read column names of database table !"));
     }
     QStringList columnList;
@@ -104,6 +107,58 @@ QList<QVariantMap> Persistence::readWholeTable(const QString tableName) const
     db.close();
 
     return accountList;
+}
+
+/**
+ * Get data type info of database columns.
+ * Data type is a QVariant::Type and store in QHash as value.
+ * Column names are the keys to the values in QHash.
+ * @return      A hash map with data type info to database columns.
+ */
+QHash<QString, QVariant::Type> Persistence::getTablesDataTypes() const
+{
+    QSqlDatabase db = QSqlDatabase::database("local");
+    if (! db.open()) {
+        throw SqlException(QString("Could not open database !"));
+    }
+    QSqlRecord record = db.record(m_tableName);
+    if (record.isEmpty()) {
+        db.close();
+        throw SqlException(QString("Could not read table info !"));
+    }
+    QHash<QString, QVariant::Type> dataTypeMap;
+    for (int index=0; index<record.count(); ++index) {
+        QSqlField field = record.field(index);
+        QString columnName = field.name();
+        QVariant::Type dataType = field.type();
+        dataTypeMap.insert(columnName, dataType);
+    }
+    db.close();
+
+    return dataTypeMap;
+}
+
+/**
+ * Public static
+ * Create a QHash<int, QByteArray> map with TableModel roles as key
+ * and database column names as values.
+ * The column names are used as role names.
+ * @return roles    A map with roles.
+ */
+QHash<int, QByteArray> Persistence::getTableModelRoles()
+{
+    QHash<int, QByteArray> roles;
+    roles.insert(TableModel::IdRole, QString("id").toLocal8Bit());
+    roles.insert(TableModel::ProviderRole, QString("provider").toLocal8Bit());
+    roles.insert(TableModel::UsernameRole, QString("username").toLocal8Bit());
+    roles.insert(TableModel::PasswordRole, QString("password").toLocal8Bit());
+    roles.insert(TableModel::QuestionRole, QString("question").toLocal8Bit());
+    roles.insert(TableModel::AnswerRole, QString("answer").toLocal8Bit());
+    roles.insert(TableModel::LengthRole, QString("passwordlength").toLocal8Bit());
+    roles.insert(TableModel::DefinedCharacterRole, QString("definedcharacter").toLocal8Bit());
+    roles.insert(TableModel::LastModifyRole, QString("lastmodify").toLocal8Bit());
+
+    return roles;
 }
 
 /**

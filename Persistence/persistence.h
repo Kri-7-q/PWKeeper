@@ -21,6 +21,10 @@ public:
     QList<QVariantMap> findAccounts(const QVariantMap &searchObject) const;
     QStringList getColumnNames(const QString tableName) const;
     QList<QVariantMap> readWholeTable(const QString tableName) const;
+    QHash<QString, QVariant::Type> getTablesDataTypes() const;
+
+    // Static
+    static QHash<int, QByteArray> getTableModelRoles();
 
 private:
     QString m_primaryKey;

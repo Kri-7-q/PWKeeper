@@ -28,9 +28,15 @@ void ListViewControler::deleteModelRow(const int row) const
  * Private
  * Slot
  * Is called when a model is set to the controler.
+ * Signal is connected to this slot in constructor.
+ * All content of database is set to the model.
+ * Data types to the model roles are read from database.
+ * (Role names are equal to database column names.)
  */
 void ListViewControler::setModelContent()
 {
     m_pModel->resetContent(&m_persistentData);
+    QHash<QString, QVariant::Type> dataTypeMap = m_database.getTablesDataTypes();
+    m_pModel->setDataTypeMap(dataTypeMap);
 }
 

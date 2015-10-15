@@ -1,20 +1,14 @@
 #include "tablemodel.h"
+#include "Persistence/persistence.h"
 
 // Constructor
 TableModel::TableModel(QObject *parent) :
     QAbstractListModel(parent),
     m_isModified(false)
 {
-    m_roles.insert(IdRole, QString("id").toLocal8Bit());
-    m_roles.insert(ProviderRole, QString("provider").toLocal8Bit());
-    m_roles.insert(UsernameRole, QString("username").toLocal8Bit());
-    m_roles.insert(PasswordRole, QString("password").toLocal8Bit());
-    m_roles.insert(LengthRole, QString("passwordlength").toLocal8Bit());
-    m_roles.insert(DefinedCharacterRole, QString("definedcharacter").toLocal8Bit());
-    m_roles.insert(AnswerRole, QString("answer").toLocal8Bit());
-    m_roles.insert(QuestionRole, QString("question").toLocal8Bit());
-    m_roles.insert(LastModifyRole, QString("lastmodify").toLocal8Bit());
+    m_roles = Persistence::getTableModelRoles();
     m_roles.insert(StateRole, QString("state").toLocal8Bit());
+    initializeDataTypeMap();
 }
 
 // Override
@@ -220,4 +214,47 @@ bool TableModel::removeRows(int row, int count, const QModelIndex &parent)
     endRemoveRows();
 
     return true;
+}
+
+/**
+ * Public
+ * Get data type to a role name.
+ * @param roleName      The name of a model role.
+ * @return              A QVariant::Type. QVariant::Invalid if role name is unknown.
+ */
+QVariant::Type TableModel::dataTypeOfRole(const QString &roleName) const
+{
+    return m_dataTypeMap.value(roleName, QVariant::Invalid);
+}
+
+/**
+ * Public
+ * Setter - Set data type map.
+ * Data type information map to the model roles.
+ * @param dataTypeMap
+ */
+void TableModel::setDataTypeMap(const QHash<QString, QVariant::Type> &dataTypeMap)
+{
+    m_dataTypeMap = dataTypeMap;
+}
+
+/**
+ * Private
+ * Initialize data type map. Map has role names as key
+ * and QVariant::Type as value. These are the database
+ * types.
+ * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ * Should be read from database.
+ */
+void TableModel::initializeDataTypeMap()
+{
+    m_dataTypeMap.insert(QString("id"), QVariant::Int);
+    m_dataTypeMap.insert(QString("provider"), QVariant::String);
+    m_dataTypeMap.insert(QString("username"), QVariant::String);
+    m_dataTypeMap.insert(QString("password"), QVariant::String);
+    m_dataTypeMap.insert(QString("question"), QVariant::String);
+    m_dataTypeMap.insert(QString("answer"), QVariant::String);
+    m_dataTypeMap.insert(QString("passwordlength"), QVariant::Int);
+    m_dataTypeMap.insert(QString("definedcharacter"), QVariant::String);
+    m_dataTypeMap.insert(QString("lastmodify"), QVariant::DateTime);
 }

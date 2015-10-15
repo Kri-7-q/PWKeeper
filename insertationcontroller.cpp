@@ -74,7 +74,8 @@ bool InsertationController::insertModifiedData(const QModelIndex &index, const Q
     foreach (QString role, roleList) {
         QVariant value = modifiedData.value(role, QVariant());
         QVariant original = m_pModel->data(index, role);
-        if (value.convert(original.type())) {
+        QVariant::Type dataType = m_pModel->dataTypeOfRole(role);
+        if (value.convert(dataType)) {
             if (value != original) {
                 m_pModel->setData(index, value, role);
                 hasModifications = true;

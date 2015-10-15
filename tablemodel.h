@@ -44,11 +44,17 @@ public:
     bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex());
     int appendEmptyRow(const QVariantMap& standardData = QVariantMap());
     bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
+    QVariant::Type dataTypeOfRole(const QString &roleName) const;
+    void setDataTypeMap(const QHash<QString, QVariant::Type> &dataTypeMap);
 
 private:
     QList<QVariantMap> m_rowList;
     QHash<int, QByteArray> m_roles;
     bool m_isModified;
+    QHash<QString, QVariant::Type> m_dataTypeMap;
+
+    // Private Methods
+    void initializeDataTypeMap();
 };
 
 #endif // TABLEMODEL_H
