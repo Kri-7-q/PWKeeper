@@ -42,9 +42,12 @@ Rectangle {
     property color currentTextColor: normalTextColor
 
     // Signal for data changed in model.
-    signal modelDataChanged
-    Component.onCompleted: tableModel.dataChanged.connect(modelDataChanged)
+    signal modelDataChanged(var row)
+    Component.onCompleted: tableModel.dataStyleChanged.connect(modelDataChanged)
     onModelDataChanged: {
+        if (row !== styleData.row) {
+            return
+        }
         modelRowState = tableModel.modelRowState(styleData.row);
         switch (modelRowState) {
         case TableModel.Origin:

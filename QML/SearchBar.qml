@@ -23,8 +23,8 @@ Rectangle {
             id: searchText
             width: 150
             height: searchBarControl.controlHigh
-            onClicked: controler.findValuesFor(searchType.currentText, text)
-            Keys.onReturnPressed: controler.findValuesFor(searchType.currentText, text)
+            onClicked: listViewControler.findValuesFor(searchType.currentText, text)
+            Keys.onReturnPressed: listViewControler.findValuesFor(searchType.currentText, text)
         }
         Button {
             height: searchBarControl.controlHigh

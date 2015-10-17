@@ -21,6 +21,7 @@ public:
 
 signals:
     void isModifiedChanged();
+    void dataStyleChanged(const int row);
 
 public slots:
     TableModel::ModelRowState modelRowState(const int row) const;
@@ -36,14 +37,14 @@ public:
     bool setData(const QModelIndex &index, const QVariant &value, const QString &key);
     void resetContent(const QList<QVariantMap> *newContent = NULL);
     QHash<int,QByteArray> roleNames() const;
+    bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
+    bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex());
 
-    // Read data
+    // Concret class members
     QVariantMap getRow(const int row) const;
     bool isModified() const;
     void setIsModified(bool isModified);
-    bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex());
     int appendEmptyRow(const QVariantMap& standardData = QVariantMap());
-    bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
     QVariant::Type dataTypeOfRole(const QString &roleName) const;
     void setDataTypeMap(const QHash<QString, QVariant::Type> &dataTypeMap);
 

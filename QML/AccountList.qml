@@ -110,6 +110,7 @@ Item {
                 text: qsTr("Save")
                 style: PushButtonStyle {}
                 visible: tableModel.isModified
+                onClicked: listViewController.persistModelModifications(dataInfoModel.getEditableRoles())
             }
         } // END - Row (controlBarButtonRow)
     } // END - ControlBar (Rectangle)

@@ -26,6 +26,7 @@ void InsertationController::setModifiedData(const int row, const QVariantMap mod
     TableModel::ModelRowState state = (TableModel::ModelRowState)m_pModel->data(index, TableModel::StateRole).toInt();
     if (hasModifications && state != TableModel::New) {
         m_pModel->setData(index, QVariant(TableModel::Modified), TableModel::StateRole);
+        emit m_pModel->dataStyleChanged(row);
     }
 }
 
@@ -40,6 +41,7 @@ void InsertationController::insertNewData(const int row, const QVariantMap newDa
     QModelIndex index = m_pModel->index(row);
     insertModifiedData(index, newData, roleList);
     m_pModel->setData(index, QVariant(TableModel::New), TableModel::StateRole);
+    emit m_pModel->dataStyleChanged(row);
 }
 
 /**

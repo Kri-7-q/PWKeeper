@@ -31,11 +31,12 @@ QVariant TableModel::data(const QModelIndex &index, const int role) const
 QVariant TableModel::data(const QModelIndex &index, const QString &key) const
 {
     if (index.row() < 0 || index.row() >= m_rowList.size()) {
-        qDebug() << "Model has not row number : " << index.row();
+        qDebug() << "TableModel:dat() --> Model has not row number : " << index.row();
         return QVariant();
     }
+    QVariant value = m_rowList[index.row()].value(key, QVariant(QString()));
 
-    return m_rowList[index.row()].value(key, QVariant(QString()));
+    return value;
 }
 
 // Override
@@ -92,10 +93,17 @@ QHash<int, QByteArray> TableModel::roleNames() const
  */
 TableModel::ModelRowState TableModel::modelRowState(const int row) const
 {
-    QVariantMap entry = m_rowList[row];
-    QVariant state = entry.value(QString("state"), QVariant(TableModel::Origin));
+    QModelIndex index = this->index(row);
+    QVariant value = data(index, StateRole);
+    if (!value.canConvert(QVariant::Int)) {
+        return Origin;
+    }
+    ModelRowState state = (ModelRowState)value.toInt();
+    if (state < Origin || state > New) {
+        return Origin;
+    }
 
-    return (TableModel::ModelRowState)state.toInt();
+    return state;
 }
 
 /**
@@ -144,7 +152,7 @@ bool TableModel::insertRows(int row, int count, const QModelIndex &parent)
 }
 
 /**
- * PRIVATE
+ * Public
  * Get a role name from model role.
  * All role names are content of a hashmap.
  * @param role      A model role.
@@ -202,12 +210,10 @@ bool TableModel::removeRows(int row, int count, const QModelIndex &parent)
     int firstRow = row;
     int lastRow = row + count - 1;
     if (firstRow < 0 || lastRow >= m_rowList.size()) {
-        qDebug() << "Model has: " << m_rowList.size() << "rows";
-        qDebug() << "Delete rows: " << firstRow << " to " << lastRow;
-        qDebug() << "Cannot execute !";
+        qDebug() << "Cannot delete row. It does not exist !";
         return false;
     }
-    beginRemoveRows(parent, firstRow, lastRow);
+    beginRemoveRows(QModelIndex(), firstRow, lastRow);
     for (int i=0; i<count; ++i) {
         m_rowList.removeAt(row);
     }

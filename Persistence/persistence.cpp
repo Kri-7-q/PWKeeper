@@ -16,6 +16,106 @@ Persistence::Persistence() :
 }
 
 /**
+ * Public
+ * Open database.
+ * @return
+ */
+QSqlDatabase Persistence::openDatabase() const
+{
+    QSqlDatabase db = QSqlDatabase::database(QString("local"));
+    if (! db.open()) {
+        throw SqlException(QString("Could not open database !"));
+    }
+
+    return db;
+}
+
+/**
+ * Close database.
+ * @param db        The database to close.
+ */
+void Persistence::closeDatabase(QSqlDatabase &db) const
+{
+    db.close();
+}
+
+/**
+ * Persists a new Account object.
+ * @param account       The new account object.
+ * @param db            A database object reference. Database must be open.
+ * @return result       True if object was stored.
+ */
+bool Persistence::persistAccountObject(const QVariantMap &account, const QSqlDatabase &db) const
+{
+    QStringList columnList = account.keys();
+    QString insertSql = insertIntoSql(columnList);
+    QSqlQuery query(db);
+    bool result = query.prepare(insertSql);
+    if (!result) {
+        SqlException exception(QString("PersistAccount: Could not prepare statement !"), insertSql, query.lastError().databaseText());
+        throw exception;
+    }
+    foreach (QString column, columnList) {
+        QVariant value = account.value(column, QVariant());
+        query.addBindValue(value);
+    }
+    result = query.exec();
+    if (! result) {
+        SqlException exception(QString("PersistAccount: Could not execute query !"), insertSql, query.lastError().databaseText());
+        throw exception;
+    }
+
+    return true;
+}
+
+/**
+ * Public
+ * Delete an Account from database using primary key.
+ * @param objectId      The id of an Account object. (Primary Key)
+ * @param db            A reference to an open database.
+ * @return              True if Account was deleted.
+ */
+bool Persistence::deleteAccountObject(const int objectId, const QSqlDatabase &db) const
+{
+    QString deleteSql = QString("DELETE FROM %1 WHERE id=%2").arg(m_tableName).arg(objectId);
+    QSqlQuery query(db);
+    bool result = query.exec(deleteSql);
+    if (! result) {
+        SqlException exception(QString("DeleteAccount: Could not excecute query !"), deleteSql, query.lastError().databaseText());
+        throw exception;
+    }
+
+    return true;
+}
+
+/**
+ * Find an account by unique constraint.
+ * Constraint consists of provider name and username.
+ * @param providerName      The provider name.
+ * @param username          The username.
+ * @return                  A map with an Account object.
+ */
+QVariantMap Persistence::findAccount(const QString &providerName, const QString &username, const QSqlDatabase& db) const
+{
+    QString selectSql = QString("SELECT * FROM %1 WHERE provider='%2' AND username='%3'")
+                        .arg(m_tableName)
+                        .arg(providerName)
+                        .arg(username);
+    QSqlQuery query(db);
+    bool result = query.exec(selectSql);
+    if (! result) {
+        SqlException exception(QString("FindAccount: Could not execute query !"), selectSql, query.lastError().databaseText());
+        throw exception;
+    }
+    if (! query.next()) {
+        return QVariantMap();
+    }
+
+
+    return getAccountObject(query, query.record());
+}
+
+/**
  * Takes a QVariantMap with parameters. The map should use database column names as key.
  * Every column which should be read must exist as a key in the map. If no value is to
  * search in column set a empty QVariant() as value. If there is to search for a value
@@ -25,19 +125,15 @@ Persistence::Persistence() :
  */
 QList<QVariantMap> Persistence::findAccounts(const QVariantMap &searchObject) const
 {
-    QSqlDatabase db = QSqlDatabase::database(QString("local"));
-    if (! db.open()) {
-        throw SqlException(QString("Could not open database !"));
-    }
+    QSqlDatabase db = openDatabase();
     QString selectStatement = QString("SELECT %1 FROM %2 %3")
             .arg(getQueryColumnString(searchObject))
             .arg(m_tableName)
-            .arg(findWhereClause(searchObject));
+            .arg(whereClauseFind(searchObject));
     QSqlQuery query(db);
     bool result = query.prepare(selectStatement);
     if (! result) {
-        SqlException exception("Could not prepare statement !");
-        exception.setSqlStatement(selectStatement);
+        SqlException exception(QString("Could not prepare statement !"), selectStatement, query.lastError().databaseText());
         throw exception;
     }
     foreach (QString key, searchObject.keys()) {
@@ -48,8 +144,7 @@ QList<QVariantMap> Persistence::findAccounts(const QVariantMap &searchObject) co
     }
     result = query.exec();
     if (! result) {
-        SqlException exception(QString("Could not execute query !"));
-        exception.setSqlStatement(selectStatement);
+        SqlException exception(QString("Could not execute query !"), selectStatement, query.lastError().databaseText());
         throw exception;
     }
     QList<QVariantMap> accountList = getAccountList(query);
@@ -66,14 +161,11 @@ QList<QVariantMap> Persistence::findAccounts(const QVariantMap &searchObject) co
  */
 QStringList Persistence::getColumnNames(const QString tableName) const
 {
-    QSqlDatabase db = QSqlDatabase::database("local");
-    if (!db.open()) {
-        throw SqlException(QString("Could not open database !"));
-    }
+    QSqlDatabase db = openDatabase();
     QSqlRecord record = db.record(tableName);
     if (record.isEmpty()) {
         db.close();
-        throw SqlException(QString("could not read column names of database table !"));
+        throw SqlException(QString("could not read column names of database table !"), QString(), db.lastError().databaseText());
     }
     QStringList columnList;
     for (int index=0; index<record.count(); ++index) {
@@ -91,14 +183,11 @@ QStringList Persistence::getColumnNames(const QString tableName) const
  */
 QList<QVariantMap> Persistence::readWholeTable(const QString tableName) const
 {
-    QSqlDatabase db = QSqlDatabase::database(QString("local"));
-    if (! db.open()) {
-        throw SqlException(QString("Could not open database !"));
-    }
+    QSqlDatabase db = openDatabase();
     QString queryString = QString("SELECT * FROM %1").arg(tableName);
     QSqlQuery query = db.exec(queryString);
     if (!query.isValid() && query.lastError().isValid()) {
-        SqlException exception(QString("Could not read from database !"));
+        SqlException exception(QString("Could not read from database !"), queryString, query.lastError().databaseText());
         exception.setDatabaseError(query.lastError().driverText());
         exception.setSqlStatement(queryString);
         throw exception;
@@ -117,14 +206,10 @@ QList<QVariantMap> Persistence::readWholeTable(const QString tableName) const
  */
 QHash<QString, QVariant::Type> Persistence::getTablesDataTypes() const
 {
-    QSqlDatabase db = QSqlDatabase::database("local");
-    if (! db.open()) {
-        throw SqlException(QString("Could not open database !"));
-    }
+    QSqlDatabase db = openDatabase();
     QSqlRecord record = db.record(m_tableName);
     if (record.isEmpty()) {
-        db.close();
-        throw SqlException(QString("Could not read table info !"));
+        throw SqlException(QString("Could not read table info !"), QString(), db.lastError().databaseText());
     }
     QHash<QString, QVariant::Type> dataTypeMap;
     for (int index=0; index<record.count(); ++index) {
@@ -168,7 +253,7 @@ QHash<int, QByteArray> Persistence::getTableModelRoles()
  * @param searchObject
  * @return
  */
-QString Persistence::findWhereClause(const QVariantMap &searchObject) const
+QString Persistence::whereClauseFind(const QVariantMap &searchObject) const
 {
     QStringList keyList = searchObject.keys();
     QString whereClause("WHERE ");
@@ -241,6 +326,39 @@ QString Persistence::getQueryColumnString(const QStringList &columnList) const
 }
 
 /**
+ * Creates a SQL command to insert data into a database table.
+ * @param columnList    A list of column names.
+ * @return insertSql    A string with a SQL insert command.
+ */
+QString Persistence::insertIntoSql(const QStringList &columnList) const
+{
+    QString insertSql = QString("INSERT INTO %1 (%2) VALUES (%3)").arg(m_tableName)
+                                                                .arg(getQueryColumnString(columnList))
+                                                                .arg(placeholderString(columnList.count()));
+
+    return insertSql;
+}
+
+/**
+ * Creates a string with a given amount of placeholders.
+ * For instance:    ?,?,?,?     (amount=4)
+ * @param amount        The number of how many placeholders are needed.
+ * @return placeholder  The string with the placeholders.
+ */
+QString Persistence::placeholderString(const int amount) const
+{
+    if (amount < 1) {
+        return QString();
+    }
+    QString placeholder("?");
+    for (int count=1; count<amount; ++count) {
+        placeholder.append(QString(",?"));
+    }
+
+    return placeholder;
+}
+
+/**
  * Takes a QSqlQuery object after query was executed. Builds a list with
  * QVariantMap objects. The QVariantMap objects contain the data with
  * the database column names as key.
@@ -250,18 +368,27 @@ QString Persistence::getQueryColumnString(const QStringList &columnList) const
 QList<QVariantMap> Persistence::getAccountList(QSqlQuery &query) const
 {
     QList<QVariantMap> list;
-    QStringList columnList;
-    for (int i=0; i<query.record().count(); ++i)
-        columnList << query.record().fieldName(i);
+    QSqlRecord record = query.record();
     while (query.next()) {
-        QVariantMap account;
-        for (int i=0; i<columnList.size(); ++i) {
-            account.insert(columnList.at(i), query.value(i));
-        }
-        list << account;
+        list << getAccountObject(query, record);
     }
 
     return list;
+}
+
+/**
+ * Get an Account object out of a QSqlQuery object.
+ * @param query     A query where next() was called.
+ * @return account  A map with an Account object.
+ */
+QVariantMap Persistence::getAccountObject(const QSqlQuery &query, const QSqlRecord& record) const
+{
+    QVariantMap account;
+    for (int i=0; i<record.count(); ++i) {
+        account.insert(record.fieldName(i), query.value(i));
+    }
+
+    return account;
 }
 
 /**

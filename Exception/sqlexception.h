@@ -8,6 +8,8 @@ class SqlException
 public:
     SqlException();
     SqlException(const QString &error);
+    SqlException(const QString& error, const QString& sqlStatement);
+    SqlException(const QString &error, const QString &sqlStatement, const QString& databaseError);
 
     QString errorText() const                           { return m_errorText; }
     QString sqlStatement() const                        { return m_sqlStatement; }
