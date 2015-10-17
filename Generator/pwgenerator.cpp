@@ -6,7 +6,7 @@
  */
 PwGenerator::PwGenerator() :
     m_hasError(false),
-    m_standardDefinition("*[a-z]*[A-Z]*[0-9]"),
+    m_standardDefinition("*[a-Z]*[0-9]"),
     m_standardLength(12)
 {
 }
@@ -21,13 +21,13 @@ QString PwGenerator::passwordFromDefinition(const ushort passwordLength, const Q
 {
     int pwLength = passwordLength;
     QString pwDefinition(definitionString);
-    if (definitionString.isNull()) {
+    if (definitionString.isEmpty()) {
         pwDefinition = m_standardDefinition;
     }
 
     if (pwLength < 1) {
-        //setErrorMessage(QString("Password length is %1 this is to less !").arg(pwLength));
-        pwLength = m_standardLength;
+        setErrorMessage(QString("Password length is %1 this is to less !").arg(pwLength));
+        return QString();
     }
     QList<CharacterDefinition> definitionList = parseCharacterDefinitionString(pwDefinition);
     if (hasError()) {
@@ -157,6 +157,10 @@ QList<CharacterDefinition> PwGenerator::parseCharacterDefinitionString(const QSt
  */
 QList<CharacterDefinition> PwGenerator::fixAmountValues(const ushort passwordLength, const QList<CharacterDefinition> &definitionList)
 {
+    if (definitionList.isEmpty()) {
+        setErrorMessage(QString("No character definition available !"));
+        return QList<CharacterDefinition>();
+    }
     QList<CharacterDefinition> withoutAmountList;
     QList<CharacterDefinition> hasAmountList(definitionList);
     int definedAmount = separarteCharacterAmountDefined(hasAmountList, withoutAmountList);

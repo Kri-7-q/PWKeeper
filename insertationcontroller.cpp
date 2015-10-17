@@ -26,7 +26,6 @@ void InsertationController::setModifiedData(const int row, const QVariantMap mod
     TableModel::ModelRowState state = (TableModel::ModelRowState)m_pModel->data(index, TableModel::StateRole).toInt();
     if (hasModifications && state != TableModel::New) {
         m_pModel->setData(index, QVariant(TableModel::Modified), TableModel::StateRole);
-        emit m_pModel->dataStyleChanged(row);
     }
 }
 
@@ -41,7 +40,6 @@ void InsertationController::insertNewData(const int row, const QVariantMap newDa
     QModelIndex index = m_pModel->index(row);
     insertModifiedData(index, newData, roleList);
     m_pModel->setData(index, QVariant(TableModel::New), TableModel::StateRole);
-    emit m_pModel->dataStyleChanged(row);
 }
 
 /**
@@ -51,15 +49,19 @@ void InsertationController::insertNewData(const int row, const QVariantMap newDa
  * @param account       An Account object with at least password length and definiton data.
  * @return              A new password.
  */
-QString InsertationController::generatePassword(const QVariantMap account) const
+QString InsertationController::generatePassword(const QVariantMap account)
 {
     QString roleName = m_pModel->modelRoleName(TableModel::DefinedCharacterRole);
     QString definition = account.value(roleName, QVariant(QString())).toString();
     roleName = m_pModel->modelRoleName(TableModel::LengthRole);
     int length = account.value(roleName, QVariant(0)).toInt();
     PwGenerator generator;
+    QString password = generator.passwordFromDefinition(length, definition);
+    if (generator.hasError()) {
+        emit errorMessage(generator.errorMessage());
+    }
 
-    return generator.passwordFromDefinition(length, definition);
+    return password;
 }
 
 /**

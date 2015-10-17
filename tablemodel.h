@@ -21,7 +21,7 @@ public:
 
 signals:
     void isModifiedChanged();
-    void dataStyleChanged(const int row);
+    void dataStyleChanged();
 
 public slots:
     TableModel::ModelRowState modelRowState(const int row) const;

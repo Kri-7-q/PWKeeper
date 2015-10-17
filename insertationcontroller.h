@@ -12,11 +12,12 @@ public:
     explicit InsertationController(QObject *parent = 0);
 
 signals:
+    void errorMessage(const QString errorMsg);
 
 public slots:
     void setModifiedData(const int row, const QVariantMap modifiedData, const QStringList roleList);
     void insertNewData(const int row, const QVariantMap newData, const QStringList roleList);
-    QString generatePassword(const QVariantMap account) const;
+    QString generatePassword(const QVariantMap account);
 
 protected:
     bool insertModifiedData(const QModelIndex &index, const QVariantMap &modifiedData, const QStringList &roleList) const;

@@ -140,7 +140,7 @@ ApplicationWindow {
             ListElement {
                 name: "Zeichensatz"
                 roleName: "definedcharacter"
-                placeHolder: "*[A-Z]*[a-z]*[0-9]"
+                placeHolder: "*[a-Z]*[0-9]"
                 editable: true
             }
             ListElement {

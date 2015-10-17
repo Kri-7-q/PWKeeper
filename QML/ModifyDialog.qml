@@ -13,6 +13,7 @@ Item {
     onVisibleChanged: {
         if (visible === true) {
             modelRow = accountList.currentRow
+            errorText.text = ""
         }
     }
 
@@ -78,6 +79,26 @@ Item {
             }
         }
     } // End - Column
+
+    // ------------------------------------------------------------------------
+    // Error messages
+    Text {
+        id: errorText
+        color: "red"
+        width: parent.width
+        height: 30
+        anchors {
+            top: entryColumn.bottom
+            left: parent.left
+            margins: 20
+        }
+
+        function setErrorMsg(message) {
+            text = message
+        }
+
+        Component.onCompleted: modifyController.errorMessage.connect(setErrorMsg)
+    }
 
     // ------------------------------------------------------------------------
     // Button bar

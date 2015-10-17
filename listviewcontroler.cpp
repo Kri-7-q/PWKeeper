@@ -22,7 +22,6 @@ void ListViewControler::deleteModelRow(const int row) const
         m_pModel->removeRow(row, QModelIndex());
     } else {
         m_pModel->setData(index, QVariant(TableModel::Deleted), TableModel::StateRole);
-        emit m_pModel->dataStyleChanged(row);
     }
 }
 
@@ -56,6 +55,7 @@ void ListViewControler::persistModelModifications(const QStringList editableRole
             break;
         }
         case TableModel::Modified:
+            ++row;
             break;
         default:
             ++row;

@@ -64,6 +64,9 @@ bool TableModel::setData(const QModelIndex &index, const QVariant &value, const 
     entry.insert(key, value);
     emit dataChanged(index, index);
     setIsModified(true);
+    if (key == modelRoleName(StateRole)) {
+        emit dataStyleChanged();
+    }
 
     return true;
 }

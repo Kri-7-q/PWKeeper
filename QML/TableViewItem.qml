@@ -37,48 +37,12 @@ Rectangle {
     property alias fontSize: itemText.font.pixelSize
     property alias fontWeight: itemText.font.weight
     property int textMargin: 3
-    // Private members
-    property var modelRowState: TableModel.Origin
-    property color currentTextColor: normalTextColor
 
-    // Signal for data changed in model.
-    signal modelDataChanged(var row)
-    Component.onCompleted: tableModel.dataStyleChanged.connect(modelDataChanged)
-    onModelDataChanged: {
-        if (row !== styleData.row) {
-            return
-        }
-        modelRowState = tableModel.modelRowState(styleData.row);
-        switch (modelRowState) {
-        case TableModel.Origin:
-            itemText.font.strikeout = false
-            itemText.font.italic = false
-            currentTextColor = normalTextColor
-            break
-        case TableModel.Modified:
-            itemText.font.strikeout = false
-            itemText.font.italic = true
-            currentTextColor = modifiedTextColor
-            break
-        case TableModel.Deleted:
-            itemText.font.strikeout = true
-            itemText.font.italic = false
-            currentTextColor = deletedTextColor
-            break
-        case TableModel.New:
-            itemText.font.strikeout = false
-            itemText.font.italic = false
-            currentTextColor = newItemTextColor
-            break
-        default:
-            break
-        }
-    }
 
     Text {
         id: itemText
         text: styleData.value
-        color: (modelRowState === TableModel.Origin && styleData.selected) ? highlightTextColor : currentTextColor
+        color: (tableViewItemPrivate.modelRowState === TableModel.Origin && styleData.selected) ? highlightTextColor : tableViewItemPrivate.currentTextColor
         elide: styleData.elideMode
         horizontalAlignment: styleData.textAlignment | Text.AlignVCenter
         anchors.verticalCenter: parent.verticalCenter
@@ -89,6 +53,59 @@ Rectangle {
             family: "Helvetica"
             pixelSize: 12
             weight: Font.Normal
+        }
+    }
+
+
+
+    // Private member
+    QtObject {
+        id: tableViewItemPrivate
+        property var modelRowState: TableModel.Origin
+        property color currentTextColor: normalTextColor
+        property bool selected: styleData.selected
+
+        /* Signal for data changed in model.
+      TableModel sends a signal when the state of a model row
+      changes. State of a model row is 'Origin'. This state
+      changes when a Account object was modified or deleted.
+      When a row in TableView is selected the signal is
+      connected to function 'updateStyle()'. This function
+      changes font style and font color of an item.
+    */
+        onSelectedChanged: {
+            if (selected === true) {
+                tableModel.dataStyleChanged.connect(updateStyle)
+            } else {
+                tableModel.dataStyleChanged.disconnect(updateStyle)
+            }
+        }
+        function updateStyle() {
+            modelRowState = tableModel.modelRowState(styleData.row);
+            switch (modelRowState) {
+            case TableModel.Origin:
+                itemText.font.strikeout = false
+                itemText.font.italic = false
+                currentTextColor = normalTextColor
+                break
+            case TableModel.Modified:
+                itemText.font.strikeout = false
+                itemText.font.italic = true
+                currentTextColor = modifiedTextColor
+                break
+            case TableModel.Deleted:
+                itemText.font.strikeout = true
+                itemText.font.italic = false
+                currentTextColor = deletedTextColor
+                break
+            case TableModel.New:
+                itemText.font.strikeout = false
+                itemText.font.italic = false
+                currentTextColor = newItemTextColor
+                break
+            default:
+                break
+            }
         }
     }
 }
