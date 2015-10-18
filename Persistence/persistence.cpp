@@ -89,6 +89,59 @@ bool Persistence::deleteAccountObject(const int objectId, const QSqlDatabase &db
 }
 
 /**
+ * Modify an existing Account object.
+ * @param id                The objects id.
+ * @param modifications     All values which are to update.
+ * @param db                A reference to an open datbase.
+ * @return                  True if Account was updated.
+ */
+bool Persistence::modifyAccountObject(const int id, const QVariantMap &modifications, const QSqlDatabase &db) const
+{
+    QString modifySql = QString("UPDATE %1 SET %2 WHERE id=%3").arg(m_tableName)
+                                                               .arg(updateTupleString(modifications))
+                                                               .arg(id);
+    QSqlQuery query(db);
+    bool result = query.prepare(modifySql);
+    if (! result) {
+        SqlException exception(QString("modifyAccountObject: Could not prepare statement !"), modifySql, query.lastError().databaseText());
+        throw exception;
+    }
+    foreach (QString key, modifications.keys()) {
+        QString bindString = QString(':').append(key);
+        QVariant value = modifications.value(key);
+        query.bindValue(bindString, value);
+    }
+    result = query.exec();
+    if (! result) {
+        SqlException exception(QString("modifyAccountObject: Could not execute prpared query !"), modifySql, query.lastError().databaseText());
+    }
+
+    return true;
+}
+
+/**
+ * Find an Account by is primary key the id value.
+ * @param id        The id of an Account.
+ * @param db        A reference to an open database.
+ * @return          An Account object or an empty QVariantMap.
+ */
+QVariantMap Persistence::findAccount(const int id, const QSqlDatabase &db) const
+{
+    QString selectSql = QString("SELECT * FROM %1 WHERE id=%2").arg(m_tableName).arg(id);
+    QSqlQuery query(db);
+    bool result = query.exec(selectSql);
+    if (! result) {
+        SqlException exception(QString("findAccount: Could not execute query !"), selectSql, query.lastError().databaseText());
+        throw exception;
+    }
+    if (! query.next()) {
+        return QVariantMap();
+    }
+
+    return getAccountObject(query, query.record());
+}
+
+/**
  * Find an account by unique constraint.
  * Constraint consists of provider name and username.
  * @param providerName      The provider name.
@@ -110,7 +163,6 @@ QVariantMap Persistence::findAccount(const QString &providerName, const QString 
     if (! query.next()) {
         return QVariantMap();
     }
-
 
     return getAccountObject(query, query.record());
 }
@@ -323,6 +375,26 @@ QString Persistence::getQueryColumnString(const QStringList &columnList) const
     }
 
     return columnString;
+}
+
+/**
+ * Build a set of tuples komma seperated.
+ * Tuples consist of column name = bind string.
+ * Bind string is column name with a leading colon.
+ * @param differences   A map with all modified values.
+ * @return tupleString  A string with UPDATE SET tuples.
+ */
+QString Persistence::updateTupleString(const QVariantMap &differences) const
+{
+    QString tupleString;
+    QStringList keyList = differences.keys();
+    foreach (QString key, keyList) {
+        // columnName=:bindString,
+        tupleString.append(key).append("=:").append(key).append(',');
+    }
+    tupleString.remove(tupleString.length()-1, 1);
+
+    return tupleString;
 }
 
 /**

@@ -24,8 +24,10 @@ public:
     // Modify database rows.
     bool persistAccountObject(const QVariantMap& account, const QSqlDatabase& db) const;
     bool deleteAccountObject(const int objectId, const QSqlDatabase& db) const;
+    bool modifyAccountObject(const int id, const QVariantMap& modifications, const QSqlDatabase& db) const;
 
     // Public methods
+    QVariantMap findAccount(const int id, const QSqlDatabase& db) const;
     QVariantMap findAccount(const QString& providerName, const QString& username, const QSqlDatabase &db) const;
     QList<QVariantMap> findAccounts(const QVariantMap &searchObject) const;
     QStringList getColumnNames(const QString tableName) const;
@@ -45,6 +47,7 @@ private:
     bool hasValueForKey(const QVariantMap &searchObject, const QString &key) const;
     QString getQueryColumnString(const QVariantMap &searchObject) const;
     QString getQueryColumnString(const QStringList &columnList) const;
+    QString updateTupleString(const QVariantMap& differences) const;
     QString insertIntoSql(const QStringList& columnList) const;
     QString placeholderString(const int amount) const;
     QList<QVariantMap> getAccountList(QSqlQuery &query) const;

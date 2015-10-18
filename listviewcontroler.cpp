@@ -4,7 +4,6 @@
 ListViewControler::ListViewControler(QObject *parent) :
     Controller(parent)
 {
-    m_persistentData = m_database.readWholeTable(m_database.tableName());
     connect(this, SIGNAL(modelChanged()), this, SLOT(setModelContent()));
 }
 
@@ -43,7 +42,16 @@ void ListViewControler::persistModelModifications(const QStringList editableRole
         case TableModel::New: {
             QVariantMap account = newAccountFromModel(index, editableRoles);
             m_database.persistAccountObject(account, db);
-            updateModelAfterPersist(index, db);
+            // Read new Account from datafase.
+            QString provider = m_pModel->data(index, TableModel::ProviderRole).toString();
+            QString username = m_pModel->data(index, TableModel::UsernameRole).toString();
+            account = m_database.findAccount(provider, username, db);
+            // Update model. New Account got an id from database and last modify date.
+            QString role = m_pModel->modelRoleName(TableModel::IdRole);
+            m_pModel->setData(index, account.value(role), role);
+            role = m_pModel->modelRoleName(TableModel::LastModifyRole);
+            m_pModel->setData(index, account.value(role), role);
+            m_pModel->setData(index, QVariant(TableModel::Origin), TableModel::StateRole);
             ++row;
             break;
         }
@@ -54,9 +62,15 @@ void ListViewControler::persistModelModifications(const QStringList editableRole
             lastRow = m_pModel->rowCount();
             break;
         }
-        case TableModel::Modified:
+        case TableModel::Modified: {
+            int id = m_pModel->data(index, TableModel::IdRole).toInt();
+            QVariantMap originAccount = m_database.findAccount(id, db);
+            QVariantMap differences = modifications(index, originAccount);
+            m_database.modifyAccountObject(id, differences, db);
+            m_pModel->setData(index, QVariant(TableModel::Origin), TableModel::StateRole);
             ++row;
             break;
+        }
         default:
             ++row;
             break;
@@ -82,7 +96,8 @@ void ListViewControler::persistModelModifications(const QStringList editableRole
  */
 void ListViewControler::setModelContent()
 {
-    m_pModel->resetContent(&m_persistentData);
+    QList<QVariantMap> persistentData = m_database.readWholeTable(m_database.tableName());
+    m_pModel->resetContent(&persistentData);
     QHash<QString, QVariant::Type> dataTypeMap = m_database.getTablesDataTypes();
     m_pModel->setDataTypeMap(dataTypeMap);
 }
@@ -111,19 +126,24 @@ QVariantMap ListViewControler::newAccountFromModel(const QModelIndex &index, con
 }
 
 /**
- * Update model after a NEW entry was persisted.
- * @param index     The model index of persisted row.
- * @param db        A reference to an open database.
+ * Takes the origin Account object and a model index. The origin Account
+ * is compared to the Account object in the model. All differences are
+ * returned in a QVariantMap object.
+ * @param index     The index of the modified Account object in the model.
+ * @param origin    The origin Account object before modification.
+ * @return          The differences between origin and modified Account.
  */
-void ListViewControler::updateModelAfterPersist(const QModelIndex &index, const QSqlDatabase& db) const
+QVariantMap ListViewControler::modifications(const QModelIndex &index, const QVariantMap &origin) const
 {
-    QString provider = m_pModel->data(index, TableModel::ProviderRole).toString();
-    QString username = m_pModel->data(index, TableModel::UsernameRole).toString();
-    QVariantMap account = m_database.findAccount(provider, username, db);
-    QString role = m_pModel->modelRoleName(TableModel::IdRole);
-    m_pModel->setData(index, account.value(role), role);
-    role = m_pModel->modelRoleName(TableModel::LastModifyRole);
-    m_pModel->setData(index, account.value(role), role);
-    m_pModel->setData(index, QVariant(TableModel::Origin), TableModel::StateRole);
-}
+    QVariantMap differeces;
+    QStringList roleList = origin.keys();
+    foreach (QString roleName, roleList) {
+        QVariant originValue = origin.value(roleName);
+        QVariant modifiedValue = m_pModel->data(index, roleName);
+        if (modifiedValue != originValue) {
+            differeces.insert(roleName, modifiedValue);
+        }
+    }
 
+    return differeces;
+}

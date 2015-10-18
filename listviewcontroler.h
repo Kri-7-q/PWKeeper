@@ -21,12 +21,11 @@ private slots:
     void setModelContent();
 
 private:
-    QList<QVariantMap> m_persistentData;
     Persistence m_database;
 
     // Private Methods
     QVariantMap newAccountFromModel(const QModelIndex& index, const QStringList& editableRoles) const;
-    void updateModelAfterPersist(const QModelIndex& index, const QSqlDatabase &db) const;
+    QVariantMap modifications(const QModelIndex& index, const QVariantMap& origin) const;
 };
 
 #endif // LISTVIEWCONTROLER_H
