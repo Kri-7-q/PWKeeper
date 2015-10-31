@@ -3,11 +3,19 @@
 
 #include "Exception/sqlexception.h"
 #include <QStringList>
+#include <QVariantMap>
 #include <QSqlDatabase>
 #include <QSqlQuery>
+#ifdef Q_OS_UNIX
 #include <QSqlRecord>
 #include <QSqlError>
-#include <QVariantMap>
+#include <QSqlDriver>
+#include <QSqlField>
+#endif
+#ifdef Q_OS_WIN
+#include "SqlDriver/PostgreSql/qsql_psql_p.h"
+#endif
+
 
 class Persistence
 {
@@ -41,15 +49,11 @@ private:
     QString m_primaryKey;
     QStringList m_uniqueKey;
     QString m_tableName;
+    QSqlRecord m_record;
 
     // Methods
-    QString whereClauseFind(const QVariantMap &searchObject) const;
-    bool hasValueForKey(const QVariantMap &searchObject, const QString &key) const;
-    QString getQueryColumnString(const QVariantMap &searchObject) const;
-    QString getQueryColumnString(const QStringList &columnList) const;
-    QString updateTupleString(const QVariantMap& differences) const;
-    QString insertIntoSql(const QStringList& columnList) const;
-    QString placeholderString(const int amount) const;
+    QSqlRecord recordFromVariantMap(const QVariantMap& searchObject) const;
+    QSqlRecord recordFieldsWithValuesFromRecord(const QSqlRecord& sourceRecord) const;
     QList<QVariantMap> getAccountList(QSqlQuery &query) const;
     QVariantMap getAccountObject(const QSqlQuery& query, const QSqlRecord &record) const;
     void initializeDatabase(QSqlDatabase &db) const;

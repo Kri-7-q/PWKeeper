@@ -38,7 +38,6 @@ Rectangle {
     property alias fontWeight: itemText.font.weight
     property int textMargin: 3
 
-
     Text {
         id: itemText
         text: styleData.value
@@ -57,11 +56,10 @@ Rectangle {
     }
 
 
-
     // Private member
     QtObject {
         id: tableViewItemPrivate
-        property var modelRowState: TableModel.Origin
+        property int modelRowState: TableModel.Origin
         property color currentTextColor: normalTextColor
         property bool selected: styleData.selected
 
@@ -107,5 +105,5 @@ Rectangle {
                 break
             }
         }
-    }
+    } // END - QtObject (Private)
 }

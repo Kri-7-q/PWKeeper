@@ -1,4 +1,4 @@
-#include <QApplication>
+#include <QGuiApplication>
 #include <QtQml>
 #include "listviewcontroler.h"
 #include "viewcontroler.h"
@@ -7,7 +7,7 @@
 
 int main(int argc, char *argv[])
 {
-    QApplication app(argc, argv);
+    QGuiApplication app(argc, argv);
 
     qmlRegisterType<TableModel>("Models", 1, 0, "TableModel");
     qmlRegisterType<ListViewControler>("Controllers", 1, 0, "ListViewController");

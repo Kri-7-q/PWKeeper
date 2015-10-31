@@ -13,6 +13,10 @@ Persistence::Persistence() :
 {
     QSqlDatabase db = QSqlDatabase::addDatabase("QPSQL", "local");
     initializeDatabase(db);
+    if (db.open()) {
+        m_record = db.record(m_tableName);
+        db.close();
+    }
 }
 
 /**
@@ -47,21 +51,20 @@ void Persistence::closeDatabase(QSqlDatabase &db) const
  */
 bool Persistence::persistAccountObject(const QVariantMap &account, const QSqlDatabase &db) const
 {
-    QStringList columnList = account.keys();
-    QString insertSql = insertIntoSql(columnList);
+    QSqlRecord insertRecord = recordFromVariantMap(account);
+    QString insertSql = db.driver()->sqlStatement(QSqlDriver::InsertStatement, m_tableName, insertRecord, true);
     QSqlQuery query(db);
     bool result = query.prepare(insertSql);
     if (!result) {
-        SqlException exception(QString("PersistAccount: Could not prepare statement !"), insertSql, query.lastError().databaseText());
+        SqlException exception(QString("Persistence:persistAccount() --> Could not prepare statement !"), insertSql, query.lastError().databaseText());
         throw exception;
     }
-    foreach (QString column, columnList) {
-        QVariant value = account.value(column, QVariant());
-        query.addBindValue(value);
+    for (int index=0; index<insertRecord.count(); ++index) {
+        query.addBindValue(insertRecord.value(index));
     }
     result = query.exec();
     if (! result) {
-        SqlException exception(QString("PersistAccount: Could not execute query !"), insertSql, query.lastError().databaseText());
+        SqlException exception(QString("Persistence:persistAccount() --> Could not execute query !"), insertSql, query.lastError().databaseText());
         throw exception;
     }
 
@@ -77,11 +80,17 @@ bool Persistence::persistAccountObject(const QVariantMap &account, const QSqlDat
  */
 bool Persistence::deleteAccountObject(const int objectId, const QSqlDatabase &db) const
 {
-    QString deleteSql = QString("DELETE FROM %1 WHERE id=%2").arg(m_tableName).arg(objectId);
+    QString deleteSql = QString("DELETE FROM %1 WHERE id=?").arg(m_tableName);
     QSqlQuery query(db);
-    bool result = query.exec(deleteSql);
+    bool result = query.prepare(deleteSql);
     if (! result) {
-        SqlException exception(QString("DeleteAccount: Could not excecute query !"), deleteSql, query.lastError().databaseText());
+        SqlException exception(QString("Persistance:deleteAccount() --> Could not prepare query !"), deleteSql, query.lastError().databaseText());
+        throw exception;
+    }
+    query.addBindValue(QVariant(objectId));
+    result = query.exec();
+    if (! result) {
+        SqlException exception(QString("Persistence:deleteAccount() --> Could not execute query !"), deleteSql, query.lastError().databaseText());
         throw exception;
     }
 
@@ -97,23 +106,23 @@ bool Persistence::deleteAccountObject(const int objectId, const QSqlDatabase &db
  */
 bool Persistence::modifyAccountObject(const int id, const QVariantMap &modifications, const QSqlDatabase &db) const
 {
-    QString modifySql = QString("UPDATE %1 SET %2 WHERE id=%3").arg(m_tableName)
-                                                               .arg(updateTupleString(modifications))
-                                                               .arg(id);
+    QSqlRecord modifyRecord = recordFromVariantMap(modifications);
+    QString modifySql = db.driver()->sqlStatement(QSqlDriver::UpdateStatement, m_tableName, modifyRecord, true);
+    modifySql.append(QString(" WHERE id=?"));
     QSqlQuery query(db);
     bool result = query.prepare(modifySql);
     if (! result) {
-        SqlException exception(QString("modifyAccountObject: Could not prepare statement !"), modifySql, query.lastError().databaseText());
+        SqlException exception(QString("Persistence:modifyAccountObject() --> Could not prepare statement !"), modifySql, query.lastError().databaseText());
         throw exception;
     }
-    foreach (QString key, modifications.keys()) {
-        QString bindString = QString(':').append(key);
-        QVariant value = modifications.value(key);
-        query.bindValue(bindString, value);
+    for (int index=0; index<modifyRecord.count(); ++index) {
+        query.addBindValue(modifyRecord.value(index));
     }
+    query.addBindValue(QVariant(id));
     result = query.exec();
     if (! result) {
-        SqlException exception(QString("modifyAccountObject: Could not execute prpared query !"), modifySql, query.lastError().databaseText());
+        SqlException exception(QString("Persistence:modifyAccountObject() --> Could not execute prepared query !"), modifySql, query.lastError().databaseText());
+        throw exception;
     }
 
     return true;
@@ -127,11 +136,17 @@ bool Persistence::modifyAccountObject(const int id, const QVariantMap &modificat
  */
 QVariantMap Persistence::findAccount(const int id, const QSqlDatabase &db) const
 {
-    QString selectSql = QString("SELECT * FROM %1 WHERE id=%2").arg(m_tableName).arg(id);
+    QString selectSql = QString("SELECT * FROM %1 WHERE id=?").arg(m_tableName);
     QSqlQuery query(db);
-    bool result = query.exec(selectSql);
+    bool result = query.prepare(selectSql);
     if (! result) {
-        SqlException exception(QString("findAccount: Could not execute query !"), selectSql, query.lastError().databaseText());
+        SqlException exception(QString("Persistence:findAccount(int) --> Could not prepare query !"), selectSql, query.lastError().databaseText());
+        throw exception;
+    }
+    query.addBindValue(QVariant(id));
+    result = query.exec();
+    if (! result) {
+        SqlException exception(QString("Persistence:findAccount(int) --> Could not execute query !"), selectSql, query.lastError().databaseText());
         throw exception;
     }
     if (! query.next()) {
@@ -150,14 +165,18 @@ QVariantMap Persistence::findAccount(const int id, const QSqlDatabase &db) const
  */
 QVariantMap Persistence::findAccount(const QString &providerName, const QString &username, const QSqlDatabase& db) const
 {
-    QString selectSql = QString("SELECT * FROM %1 WHERE provider='%2' AND username='%3'")
-                        .arg(m_tableName)
-                        .arg(providerName)
-                        .arg(username);
+    QString selectSql = QString("SELECT * FROM %1 WHERE provider=? AND username=?").arg(m_tableName);
     QSqlQuery query(db);
-    bool result = query.exec(selectSql);
+    bool result = query.prepare(selectSql);
     if (! result) {
-        SqlException exception(QString("FindAccount: Could not execute query !"), selectSql, query.lastError().databaseText());
+        SqlException exception(QString("Persistence:FindAccount() --> Could not prepare query !"), selectSql, query.lastError().databaseText());
+        throw exception;
+    }
+    query.addBindValue(QVariant(providerName));
+    query.addBindValue(QVariant(username));
+    result = query.exec();
+    if (! result) {
+        SqlException exception(QString("Persistence:findAccount() --> Could not execute query !"), selectSql, query.lastError().databaseText());
         throw exception;
     }
     if (! query.next()) {
@@ -178,25 +197,25 @@ QVariantMap Persistence::findAccount(const QString &providerName, const QString 
 QList<QVariantMap> Persistence::findAccounts(const QVariantMap &searchObject) const
 {
     QSqlDatabase db = openDatabase();
-    QString selectStatement = QString("SELECT %1 FROM %2 %3")
-            .arg(getQueryColumnString(searchObject))
-            .arg(m_tableName)
-            .arg(whereClauseFind(searchObject));
+    QSqlRecord selectRecord = recordFromVariantMap(searchObject);
+    QSqlRecord whereClauseRecord = recordFieldsWithValuesFromRecord(selectRecord);
+    QString selectSql = db.driver()->sqlStatement(QSqlDriver::SelectStatement, m_tableName, selectRecord, false);
+    QString whereClauseSql = db.driver()->sqlStatement(QSqlDriver::WhereStatement, m_tableName, whereClauseRecord, true);
+    if (! whereClauseSql.isEmpty()) {
+        selectSql.append(' ').append(whereClauseSql);
+    }
     QSqlQuery query(db);
-    bool result = query.prepare(selectStatement);
+    bool result = query.prepare(selectSql);
     if (! result) {
-        SqlException exception(QString("Could not prepare statement !"), selectStatement, query.lastError().databaseText());
+        SqlException exception(QString("Persistence:findAccounts() --> Could not prepare statement !"), selectSql, query.lastError().databaseText());
         throw exception;
     }
-    foreach (QString key, searchObject.keys()) {
-        if (hasValueForKey(searchObject, key)) {
-            QString bindString = QString(':').append(key);
-            query.bindValue(bindString, searchObject.value(key));
-        }
+    for (int index=0; index<whereClauseRecord.count(); ++index) {
+        query.addBindValue(whereClauseRecord.value(index));
     }
     result = query.exec();
     if (! result) {
-        SqlException exception(QString("Could not execute query !"), selectStatement, query.lastError().databaseText());
+        SqlException exception(QString("Persistence:findAccounts() --> Could not execute query !"), selectSql, query.lastError().databaseText());
         throw exception;
     }
     QList<QVariantMap> accountList = getAccountList(query);
@@ -213,17 +232,10 @@ QList<QVariantMap> Persistence::findAccounts(const QVariantMap &searchObject) co
  */
 QStringList Persistence::getColumnNames(const QString tableName) const
 {
-    QSqlDatabase db = openDatabase();
-    QSqlRecord record = db.record(tableName);
-    if (record.isEmpty()) {
-        db.close();
-        throw SqlException(QString("could not read column names of database table !"), QString(), db.lastError().databaseText());
-    }
     QStringList columnList;
-    for (int index=0; index<record.count(); ++index) {
-        columnList << record.fieldName(index);
+    for (int index=0; index<m_record.count(); ++index) {
+        columnList << m_record.fieldName(index);
     }
-    db.close();
 
     return columnList;
 }
@@ -236,12 +248,12 @@ QStringList Persistence::getColumnNames(const QString tableName) const
 QList<QVariantMap> Persistence::readWholeTable(const QString tableName) const
 {
     QSqlDatabase db = openDatabase();
-    QString queryString = QString("SELECT * FROM %1").arg(tableName);
-    QSqlQuery query = db.exec(queryString);
+    QString selectSql = QString("SELECT * FROM %1").arg(tableName);
+    QSqlQuery query = db.exec(selectSql);
     if (!query.isValid() && query.lastError().isValid()) {
-        SqlException exception(QString("Could not read from database !"), queryString, query.lastError().databaseText());
+        SqlException exception(QString("Could not read from database !"), selectSql, query.lastError().databaseText());
         exception.setDatabaseError(query.lastError().driverText());
-        exception.setSqlStatement(queryString);
+        exception.setSqlStatement(selectSql);
         throw exception;
     }
     QList<QVariantMap> accountList = getAccountList(query);
@@ -258,19 +270,17 @@ QList<QVariantMap> Persistence::readWholeTable(const QString tableName) const
  */
 QHash<QString, QVariant::Type> Persistence::getTablesDataTypes() const
 {
-    QSqlDatabase db = openDatabase();
-    QSqlRecord record = db.record(m_tableName);
-    if (record.isEmpty()) {
-        throw SqlException(QString("Could not read table info !"), QString(), db.lastError().databaseText());
+    if (m_record.isEmpty()) {
+        throw SqlException(QString("Persistence:getTableDataTypes() --> No table info avalable !"),
+                           QString(), QString());
     }
     QHash<QString, QVariant::Type> dataTypeMap;
-    for (int index=0; index<record.count(); ++index) {
-        QSqlField field = record.field(index);
+    for (int index=0; index<m_record.count(); ++index) {
+        QSqlField field = m_record.field(index);
         QString columnName = field.name();
         QVariant::Type dataType = field.type();
         dataTypeMap.insert(columnName, dataType);
     }
-    db.close();
 
     return dataTypeMap;
 }
@@ -299,136 +309,44 @@ QHash<int, QByteArray> Persistence::getTableModelRoles()
 }
 
 /**
- * Build a where clause to find values in database.
- * Returns a where condition string to search for
- * values.
- * @param searchObject
- * @return
+ * Creates a QSqlRecord object from a QVariantMap cotaining column names as key.
+ * @param searchObject      A Map with column names as key and QVariant values.
+ * @return record           A record with columns and values of searchOject.
  */
-QString Persistence::whereClauseFind(const QVariantMap &searchObject) const
+QSqlRecord Persistence::recordFromVariantMap(const QVariantMap &searchObject) const
 {
-    QStringList keyList = searchObject.keys();
-    QString whereClause("WHERE ");
-    foreach (QString key, keyList) {
-        QVariant value = searchObject.value(key);
+    QSqlRecord record;
+    QStringList columnNameList = searchObject.keys();
+    foreach (QString columnName, columnNameList) {
+        QSqlField field = m_record.field(columnName);
+        QVariant value = searchObject.value(columnName);
         if (value.isValid()) {
-            QString parameter = QString("%1=:%2 AND ").arg(key).arg(key);
-            whereClause.append(parameter);
+            field.setValue(value);
+        }
+        record.append(field);
+    }
+
+    return record;
+}
+
+/**
+ * Extracts fields with values from a record.
+ * @param sourceRecord      The record with fields to extract.
+ * @return record           A record with fields containing a value.
+ */
+QSqlRecord Persistence::recordFieldsWithValuesFromRecord(const QSqlRecord &sourceRecord) const
+{
+    QSqlRecord record;
+    for (int index=0; index<sourceRecord.count(); ++index) {
+        QSqlField field = sourceRecord.field(index);
+        if (! field.isNull()) {
+            record.append(field);
         }
     }
-    if (whereClause.endsWith(QString("AND "))) {
-        whereClause.remove(whereClause.length()-5, 5);
-    }
-    if (whereClause.endsWith(QString("WHERE "))) {
-        return QString();
-    }
 
-    return whereClause;
+    return record;
 }
 
-/**
- * Tests if a map entry has a value or if it keeps
- * just an empty QVariant object.
- * @param searchObject      A map with column names as key and values to search for.
- * @param key               A key (column name) to proof.
- * @return                  True if entry has a valid value.
- */
-bool Persistence::hasValueForKey(const QVariantMap &searchObject, const QString &key) const
-{
-    QVariant value = searchObject.value(key);
-
-    return value.isValid();
-}
-
-/**
- * Takes a map with database column names as keys and creates a single
- * string with column names comma separated.
- * @param searchObject      A map with column names as key.
- * @return columnString     A single string with all column names comma separated.
- */
-QString Persistence::getQueryColumnString(const QVariantMap &searchObject) const
-{
-    QStringList keyList = searchObject.keys();
-    QString columns;
-    foreach (QString key, keyList) {
-        columns.append(key).append(',');
-    }
-    columns.remove(columns.length()-1, 1);
-
-    return columns;
-}
-
-/**
- * Takes a string list with column names and creates a single
- * string with column names comma separated.
- * @param columnList        A list with column names.
- * @return columnString     A single string with all column names comma separated.
- */
-QString Persistence::getQueryColumnString(const QStringList &columnList) const
-{
-    QString columnString;
-    foreach (QString column, columnList) {
-        columnString.append(column).append(',');
-    }
-    if (columnString.endsWith(QChar(','))) {
-        columnString.remove(columnString.length()-1, 1);
-    }
-
-    return columnString;
-}
-
-/**
- * Build a set of tuples komma seperated.
- * Tuples consist of column name = bind string.
- * Bind string is column name with a leading colon.
- * @param differences   A map with all modified values.
- * @return tupleString  A string with UPDATE SET tuples.
- */
-QString Persistence::updateTupleString(const QVariantMap &differences) const
-{
-    QString tupleString;
-    QStringList keyList = differences.keys();
-    foreach (QString key, keyList) {
-        // columnName=:bindString,
-        tupleString.append(key).append("=:").append(key).append(',');
-    }
-    tupleString.remove(tupleString.length()-1, 1);
-
-    return tupleString;
-}
-
-/**
- * Creates a SQL command to insert data into a database table.
- * @param columnList    A list of column names.
- * @return insertSql    A string with a SQL insert command.
- */
-QString Persistence::insertIntoSql(const QStringList &columnList) const
-{
-    QString insertSql = QString("INSERT INTO %1 (%2) VALUES (%3)").arg(m_tableName)
-                                                                .arg(getQueryColumnString(columnList))
-                                                                .arg(placeholderString(columnList.count()));
-
-    return insertSql;
-}
-
-/**
- * Creates a string with a given amount of placeholders.
- * For instance:    ?,?,?,?     (amount=4)
- * @param amount        The number of how many placeholders are needed.
- * @return placeholder  The string with the placeholders.
- */
-QString Persistence::placeholderString(const int amount) const
-{
-    if (amount < 1) {
-        return QString();
-    }
-    QString placeholder("?");
-    for (int count=1; count<amount; ++count) {
-        placeholder.append(QString(",?"));
-    }
-
-    return placeholder;
-}
 
 /**
  * Takes a QSqlQuery object after query was executed. Builds a list with

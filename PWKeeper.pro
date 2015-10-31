@@ -16,6 +16,9 @@ SOURCES += main.cpp \
     addcontroler.cpp \
     insertationcontroller.cpp \
     controller.cpp
+win: {
+SOURCES += SqlDriver/PostgreSql/qsql_psql.cpp
+}
 
 RESOURCES += QML/qml.qrc \
              QML/pictures.qrc
@@ -40,5 +43,12 @@ HEADERS += \
     addcontroler.h \
     insertationcontroller.h \
     controller.h
+win: {
+HEADERS += \
+    SqlDriver/PostgreSql/qobject_p.h \
+    SqlDriver/PostgreSql/qsql_psql_p.h \
+    SqlDriver/PostgreSql/qsqldriver_p.h \
+    SqlDriver/PostgreSql/qsqlresult_p.h
+}
 
 DISTFILES +=
