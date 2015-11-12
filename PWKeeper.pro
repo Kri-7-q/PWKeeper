@@ -15,10 +15,9 @@ SOURCES += main.cpp \
     Persistence/credentials.cpp \
     addcontroler.cpp \
     insertationcontroller.cpp \
-    controller.cpp
-win: {
-SOURCES += SqlDriver/PostgreSql/qsql_psql.cpp
-}
+    controller.cpp \
+    SqlDriver/PostgreSql/kqpostgresqldriver.cpp \
+    SqlDriver/PostgreSql/kqpostgresqlresult.cpp
 
 RESOURCES += QML/qml.qrc \
              QML/pictures.qrc
@@ -42,13 +41,17 @@ HEADERS += \
     Persistence/credentials.h \
     addcontroler.h \
     insertationcontroller.h \
-    controller.h
-win: {
-HEADERS += \
-    SqlDriver/PostgreSql/qobject_p.h \
-    SqlDriver/PostgreSql/qsql_psql_p.h \
-    SqlDriver/PostgreSql/qsqldriver_p.h \
-    SqlDriver/PostgreSql/qsqlresult_p.h
-}
+    controller.h \
+    SqlDriver/PostgreSql/kqpostgresqldriver.h \
+    SqlDriver/PostgreSql/kqpostgresqlresult.h
 
 DISTFILES +=
+
+macx: {
+LIBS += -L/Application/PostgreSQL/9.4/lib/ -lpq
+
+INCLUDEPATH += /Application/PostgreSQL/9.4/include
+DEPENDPATH += /Application/PostgreSQL/9.4/include
+
+PRE_TARGETDEPS += /Application/PostgreSQL/9.4/lib/libpq.a
+}

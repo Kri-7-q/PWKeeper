@@ -27,7 +27,9 @@ KQPostgreSqlResult::KQPostgreSqlResult(const KQPostgreSqlDriver *driver) :
  */
 KQPostgreSqlResult::~KQPostgreSqlResult()
 {
-    clearResult();
+    if (m_result) {
+        PQclear(m_result);
+    }
 }
 
 /**

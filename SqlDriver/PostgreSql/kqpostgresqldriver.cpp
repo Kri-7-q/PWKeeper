@@ -181,7 +181,6 @@ QSqlRecord KQPostgreSqlDriver::record(const QString &tableName) const
     }
     QString table(tableName.toLower()), schema;
     splitSchemaName(table, schema);
-    qDebug() << "Tablename: " << table << "\tSchemaname: " << schema;
     QString stmt("select pg_attribute.attname, pg_attribute.atttypid::int, "
             "pg_attribute.attnotnull, pg_attribute.attlen, pg_attribute.atttypmod, "
             "pg_attrdef.adsrc "
@@ -202,7 +201,10 @@ QSqlRecord KQPostgreSqlDriver::record(const QString &tableName) const
     }
     stmt = stmt.arg(table);
     QSqlQuery query(createResult());
-    qDebug() << "Execute query: " << query.exec(stmt);
+    if (! query.exec(stmt)) {
+        // If can not execute statement then return an empty record.
+        return info;
+    }
     while (query.next()) {
         int len = query.value(3).toInt();
         int precision = query.value(4).toInt();

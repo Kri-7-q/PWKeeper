@@ -6,15 +6,8 @@
 #include <QVariantMap>
 #include <QSqlDatabase>
 #include <QSqlQuery>
-#ifdef Q_OS_UNIX
-#include <QSqlRecord>
-#include <QSqlError>
-#include <QSqlDriver>
 #include <QSqlField>
-#endif
-#ifdef Q_OS_WIN
-#include "SqlDriver/PostgreSql/qsql_psql_p.h"
-#endif
+#include "SqlDriver/PostgreSql/kqpostgresqldriver.h"
 
 
 class Persistence
@@ -50,6 +43,7 @@ private:
     QStringList m_uniqueKey;
     QString m_tableName;
     QSqlRecord m_record;
+    KQPostgreSqlDriver m_postgreSqlDriver;
 
     // Methods
     QSqlRecord recordFromVariantMap(const QVariantMap& searchObject) const;

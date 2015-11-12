@@ -11,7 +11,7 @@ Persistence::Persistence() :
     m_uniqueKey(QStringList() << QString("provider") << QString("username")),
     m_tableName("accountlist")
 {
-    QSqlDatabase db = QSqlDatabase::addDatabase("QPSQL", "local");
+    QSqlDatabase db = QSqlDatabase::addDatabase(&m_postgreSqlDriver, "local");
     initializeDatabase(db);
     if (db.open()) {
         m_record = db.record(m_tableName);
