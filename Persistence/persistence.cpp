@@ -1,7 +1,9 @@
 #include "persistence.h"
 #include "credentials.h"
 #include "tablemodel.h"
+#include "SqlDriver/PostgreSql/kqpostgresqldriver.h"
 #include <QSqlField>
+#include <QSqlQuery>
 
 /**
  * Constructor
@@ -11,7 +13,7 @@ Persistence::Persistence() :
     m_uniqueKey(QStringList() << QString("provider") << QString("username")),
     m_tableName("accountlist")
 {
-    QSqlDatabase db = QSqlDatabase::addDatabase(&m_postgreSqlDriver, "local");
+    QSqlDatabase db = QSqlDatabase::addDatabase(new KQPostgreSqlDriver, "local");
     initializeDatabase(db);
     if (db.open()) {
         m_record = db.record(m_tableName);
