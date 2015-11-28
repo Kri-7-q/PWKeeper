@@ -1,11 +1,15 @@
 /**
   * TableView item delegate
   * --------------------------
-  * Draws a TableView cell. If shows the text of a cell with different colors.
+  * Draws a TableView cell. It shows the text of a cell with different colors.
   * It has colors for a selected Item, deleted Item, modified Item and a new Item.
   * In addition to the colors it shows deleted text strikeout and modified text
   * is shown in italic.
   * To update the color and font if catches the models 'dataChanged()' signal.
+  * A Item is connected to the dataStyelChanged() signal if it is selected.
+  * These connection will be released when the selection has changed.
+  * The dataStyleChanged() signal is emitted by the model when the state of a
+  * item has changed (deleted, modified, new).
   *
   * Public properties
   * --------------------

@@ -18,10 +18,10 @@ InsertationController::InsertationController(QObject *parent) :
  *                          The Id and lastmodify date are not
  *                          editable.
  */
-void InsertationController::setModifiedData(const int row, const QVariantMap modifiedData, const QStringList roleList)
+void InsertationController::setModifiedData(const int row, const QVariantMap modifiedData)
 {
     QModelIndex index = m_pModel->index(row);
-    bool hasModifications = insertModifiedData(index, modifiedData, roleList);
+    bool hasModifications = insertModifiedData(index, modifiedData);
     // Mark model row as modified if data was realy modified.
     TableModel::ModelRowState state = (TableModel::ModelRowState)m_pModel->data(index, TableModel::StateRole).toInt();
     if (hasModifications && state != TableModel::New) {
@@ -35,10 +35,11 @@ void InsertationController::setModifiedData(const int row, const QVariantMap mod
  * @param newData       A map with inserted data.
  * @param roleList      A list of model roles (Keys of the QVariantMap).
  */
-void InsertationController::insertNewData(const int row, const QVariantMap newData, const QStringList roleList)
+void InsertationController::insertNewData(const QVariantMap newData)
 {
+    int row = m_pModel->appendEmptyRow();
     QModelIndex index = m_pModel->index(row);
-    insertModifiedData(index, newData, roleList);
+    insertModifiedData(index, newData);
     m_pModel->setData(index, QVariant(TableModel::New), TableModel::StateRole);
 }
 
@@ -72,13 +73,17 @@ QString InsertationController::generatePassword(const QVariantMap account)
  * @param roleList          The list with all used model role names.
  * @return hasModificatons  True if model was modified.
  */
-bool InsertationController::insertModifiedData(const QModelIndex &index, const QVariantMap &modifiedData, const QStringList &roleList) const
+bool InsertationController::insertModifiedData(const QModelIndex &index, const QVariantMap &modifiedData) const
 {
     bool hasModifications = false;
-    foreach (QString role, roleList) {
+    for(int column=0; column<m_pModel->columnCount(); ++column) {
+        if (! m_pModel->headerData(column, "editable").toBool()) {
+            continue;
+        }
+        QString role = m_pModel->headerData(column, "roleName").toString();
         QVariant value = modifiedData.value(role, QVariant());
         QVariant original = m_pModel->data(index, role);
-        QVariant::Type dataType = m_pModel->dataTypeOfRole(role);
+        QVariant::Type dataType = m_pModel->headerData(column, "dataType").type();
         if (value.convert(dataType)) {
             if (value != original) {
                 m_pModel->setData(index, value, role);

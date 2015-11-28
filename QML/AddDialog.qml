@@ -1,6 +1,7 @@
 import QtQuick 2.0
 import QtQuick.Controls 1.2
 import Controllers 1.0
+import Models 1.0
 
 Item {
     id: root
@@ -11,10 +12,10 @@ Item {
     }
 
     property int descriptionWidth: width / 3
-    property int modelRow: 0
     property string fontFamily: "Arial"
     property int fontSize: 16
     property int fontWeight: Font.Normal
+    property alias model: textFieldRepeater.model
 
     // ---------------------------------------------------------------
     // TextField controls to modify an account
@@ -30,7 +31,7 @@ Item {
 
         Repeater {
             id: textFieldRepeater
-            model: dataInfoModel
+            model: 0
 
             Row {
                 id: entryRow
@@ -40,8 +41,8 @@ Item {
 
                 Text {
                     width: descriptionWidth
-                    text: name
-                    visible: editable
+                    text: tableModel.headerData(index, "headerName")
+                    visible: tableModel.headerData(index, "editable")
                     font {
                         family: root.fontFamily
                         pixelSize: root.fontSize
@@ -52,14 +53,14 @@ Item {
                 TextField {
                     id: entryTextField
                     width: root.width - entryRow.spacing - root.descriptionWidth - entryColumn.anchors.margins * 2
-                    text: tableModel.data(modelRow, roleName)
-                    placeholderText: placeHolder
+                    text: tableModel.headerData(index, "standardValue")
+                    placeholderText: tableModel.headerData(index, "placeHolder")
                     font {
                         family: root.fontFamily
                         pixelSize: root.fontSize
                         weight: root.fontWeight
                     }
-                    visible: editable
+                    visible: tableModel.headerData(index, "editable")
                 }
             }
         }
@@ -98,7 +99,7 @@ Item {
                 height: 30
                 style: PushButtonStyle {}
                 onClicked: {
-                    addController.insertNewData(modelRow, insertedData(), dataInfoModel.getEditableRoles())
+                    addController.insertNewData(insertedData())
                     viewController.currentView = ViewController.AccountList
                 }
             }
@@ -108,11 +109,11 @@ Item {
     // Get inserted data from input fields.
     function insertedData() {
         var data = {}
-        for (var i=0; i<dataInfoModel.count; ++i) {
-            if (!dataInfoModel.get(i).editable) {
+        for (var i=0; i<tableModel.columnCount(); ++i) {
+            if (!tableModel.headerData(i, "editable")) {
                 continue
             }
-            var modelKey = dataInfoModel.get(i).roleName
+            var modelKey = tableModel.headerData(i, "roleName")
             var value = textFieldRepeater.itemAt(i).text
             data[modelKey] = value
         }
@@ -124,19 +125,13 @@ Item {
     function generatePassword() {
         var password = addController.generatePassword(insertedData())
         var index = 0;
-        for ( ; index<dataInfoModel.count; ++index) {
-            var role = dataInfoModel.get(index).roleName
+        for ( ; index<tableModel.columnCount(); ++index) {
+            var role = tableModel.headerData(index, "roleName")
             if (role === "password") {
                 break;
             }
         }
         textFieldRepeater.itemAt(index).text = password
-    }
-
-    // Initialize dialog
-    function initializeAddDialog() {
-        modelRow = addController.appendEmptyModelRow()
-        viewController.currentView = ViewController.NewAccount
     }
 }
 

@@ -27,6 +27,8 @@ public slots:
     TableModel::ModelRowState modelRowState(const int row) const;
     QString modelRoleName(int role) const;
     QVariant data(const int row, const QString &role) const;
+    int columnCount() const;
+    QVariant headerData(const int section, const QString& role) const;
 
 public:
     // QAbstractItemModel interface
@@ -45,17 +47,15 @@ public:
     bool isModified() const;
     void setIsModified(bool isModified);
     int appendEmptyRow(const QVariantMap& standardData = QVariantMap());
-    QVariant::Type dataTypeOfRole(const QString &roleName) const;
-    void setDataTypeMap(const QHash<QString, QVariant::Type> &dataTypeMap);
 
 private:
     QList<QVariantMap> m_rowList;
+    QList<QVariantMap> m_headerList;
     QHash<int, QByteArray> m_roles;
     bool m_isModified;
-    QHash<QString, QVariant::Type> m_dataTypeMap;
 
     // Private Methods
-    void initializeDataTypeMap();
+    void initializeHeaderData();
 };
 
 #endif // TABLEMODEL_H

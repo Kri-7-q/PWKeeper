@@ -35,14 +35,14 @@ Item {
         }
 
         Repeater {
-            model: dataInfoModel
+            model: tableModel.columnCount()
 
             Row {
                 spacing: 10
 
                 Text {
                     width: root.descriptionWidth
-                    text: name
+                    text: tableModel.headerData(index, "headerName")
                     font {
                         bold: true
                         family: root.fontFamily
@@ -50,7 +50,10 @@ Item {
                     }
                 }
                 Text {
-                    text: tableModel.data(root.modelRow, roleName) //root.model[roleName]
+                    text: {
+                        var roleName = tableModel.headerData(index, "roleName")
+                        tableModel.data(root.modelRow, roleName)
+                    }
                     font {
                         family: root.fontFamily
                         pixelSize: root.fontSize

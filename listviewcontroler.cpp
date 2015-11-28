@@ -98,8 +98,6 @@ void ListViewControler::setModelContent()
 {
     QList<QVariantMap> persistentData = m_database.readWholeTable(m_database.tableName());
     m_pModel->resetContent(&persistentData);
-    QHash<QString, QVariant::Type> dataTypeMap = m_database.getTablesDataTypes();
-    m_pModel->setDataTypeMap(dataTypeMap);
 }
 
 /**

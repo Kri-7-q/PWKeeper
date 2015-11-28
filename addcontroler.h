@@ -13,7 +13,6 @@ public:
 signals:
 
 public slots:
-    int appendEmptyModelRow() const;
 };
 
 #endif // ADDCONTROLER_H

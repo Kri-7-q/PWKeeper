@@ -37,7 +37,7 @@ Item {
 
         Repeater {
             id: textFieldRepeater
-            model: dataInfoModel
+            model: tableModel.columnCount()
 
             Row {
                 id: entryRow
@@ -47,7 +47,7 @@ Item {
 
                 Text {
                     width: root.descriptionWidth
-                    text: name
+                    text: tableModel.headerData(index, "headerName")
                     font {
                         family: root.fontFamily
                         pixelSize: root.fontSize
@@ -57,9 +57,12 @@ Item {
                 TextField {
                     id: entryTextField
                     width: root.width - entryRow.spacing - root.descriptionWidth - entryColumn.anchors.margins * 2
-                    text: tableModel.data(modelRow, roleName)
-                    placeholderText: placeHolder
-                    visible: editable
+                    text: {
+                        var roleName = tableModel.headerData(index, "roleName")
+                        tableModel.data(modelRow, roleName)
+                    }
+                    placeholderText: tableModel.headerData(index, "placeHolder")
+                    visible: tableModel.headerData(index, "editable")
                     font {
                         family: root.fontFamily
                         pixelSize: root.fontSize
@@ -68,8 +71,11 @@ Item {
                 }
                 Text {
                     id: entryText
-                    text: tableModel.data(modelRow, roleName)
-                    visible: !editable
+                    text: {
+                        var roleName = tableModel.headerData(index, "roleName")
+                        tableModel.data(modelRow, roleName)
+                    }
+                    visible: !tableModel.headerData(index, "editable")
                     font {
                         family: root.fontFamily
                         pixelSize: root.fontSize
@@ -133,7 +139,7 @@ Item {
                 height: 30
                 style: PushButtonStyle {}
                 onClicked: {
-                    modifyController.setModifiedData(accountList.currentRow, modifiedData(), dataInfoModel.getEditableRoles())
+                    modifyController.setModifiedData(accountList.currentRow, modifiedData())
                     viewController.currentView = ViewController.AccountList
                 }
             }
@@ -143,11 +149,11 @@ Item {
     // Get modified data from input fields.
     function modifiedData() {
         var data = {}
-        for (var i=0; i<dataInfoModel.count; ++i) {
-            if (dataInfoModel.get(i).editable !== true) {
+        for (var i=0; i<tableModel.columnCount(); ++i) {
+            if (tableModel.headerData(i, "editable") !== true) {
                 continue
             }
-            var modelKey = dataInfoModel.get(i).roleName
+            var modelKey = tableModel.headerData(i, "roleName")
             var value = textFieldRepeater.itemAt(i).text
             data[modelKey] = value
         }
@@ -159,8 +165,8 @@ Item {
     function generatePassword() {
         var password = modifyController.generatePassword(modifiedData())
         var index = 0
-        for ( ; index<dataInfoModel.count; ++index) {
-            var role = dataInfoModel.get(index).roleName
+        for ( ; index<tableModel.columnCount(); ++index) {
+            var role = tableModel.headerData(index, "roleName")
             if (role === "password") {
                 break
             }

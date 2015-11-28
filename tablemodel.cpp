@@ -8,7 +8,7 @@ TableModel::TableModel(QObject *parent) :
 {
     m_roles = Persistence::getTableModelRoles();
     m_roles.insert(StateRole, QString("state").toLocal8Bit());
-    initializeDataTypeMap();
+    initializeHeaderData();
 }
 
 // Override
@@ -184,8 +184,33 @@ QVariant TableModel::data(const int row, const QString &role) const
 
 /**
  * Slot
+ * Get amount of columns in the model from header data.
+ * @return      The number of columns in the model.
+ */
+int TableModel::columnCount() const
+{
+    return m_headerList.size();
+}
+
+/**
+ * Slot
+ * Get column header data.
+ * @param section   The column number. Zero base.
+ * @param role      The header role.
+ * @return          A value from header.
+ */
+QVariant TableModel::headerData(const int section, const QString &role) const
+{
+    return m_headerList[section].value(role);
+}
+
+/**
+ * Slot
  * Insert an empty row into model.
  * Should be called before add a new Account.
+ * If it is required for some reason the row can be initialized
+ * with some data.
+ * @param           An empty map or with some standard data.
  * @return          The number of the new row.
  */
 int TableModel::appendEmptyRow(const QVariantMap &standardData)
@@ -225,45 +250,76 @@ bool TableModel::removeRows(int row, int count, const QModelIndex &parent)
     return true;
 }
 
-/**
- * Public
- * Get data type to a role name.
- * @param roleName      The name of a model role.
- * @return              A QVariant::Type. QVariant::Invalid if role name is unknown.
- */
-QVariant::Type TableModel::dataTypeOfRole(const QString &roleName) const
-{
-    return m_dataTypeMap.value(roleName, QVariant::Invalid);
-}
-
-/**
- * Public
- * Setter - Set data type map.
- * Data type information map to the model roles.
- * @param dataTypeMap
- */
-void TableModel::setDataTypeMap(const QHash<QString, QVariant::Type> &dataTypeMap)
-{
-    m_dataTypeMap = dataTypeMap;
-}
 
 /**
  * Private
- * Initialize data type map. Map has role names as key
- * and QVariant::Type as value. These are the database
- * types.
- * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
- * Should be read from database.
+ * Initialize the Header data of model.
+ * Contains meta data to each value of an Account object.
  */
-void TableModel::initializeDataTypeMap()
+void TableModel::initializeHeaderData()
 {
-    m_dataTypeMap.insert(QString("id"), QVariant::Int);
-    m_dataTypeMap.insert(QString("provider"), QVariant::String);
-    m_dataTypeMap.insert(QString("username"), QVariant::String);
-    m_dataTypeMap.insert(QString("password"), QVariant::String);
-    m_dataTypeMap.insert(QString("question"), QVariant::String);
-    m_dataTypeMap.insert(QString("answer"), QVariant::String);
-    m_dataTypeMap.insert(QString("passwordlength"), QVariant::Int);
-    m_dataTypeMap.insert(QString("definedcharacter"), QVariant::String);
-    m_dataTypeMap.insert(QString("lastmodify"), QVariant::DateTime);
+    QVariantMap headerItem;
+    headerItem.insert(QString("headerName"), QVariant(QString("Id")));
+    headerItem.insert(QString("roleName"), QVariant(modelRoleName(IdRole)));
+    headerItem.insert(QString("placeHolder"), QVariant(QString("Id")));
+    headerItem.insert(QString("editable"), QVariant(false));
+    headerItem.insert(QString("standardValue"), QVariant(QString()));
+    headerItem.insert(QString("dataType"), QVariant::Int);
+    m_headerList << headerItem;
+    headerItem.insert(QString("headerName"), QVariant(QString("Provider")));
+    headerItem.insert(QString("roleName"), QVariant(modelRoleName(ProviderRole)));
+    headerItem.insert(QString("placeHolder"), QVariant(QString("Amazon")));
+    headerItem.insert(QString("editable"), QVariant(true));
+    headerItem.insert(QString("standardValue"), QVariant(QString()));
+    headerItem.insert(QString("dataType"), QVariant::String);
+    m_headerList << headerItem;
+    headerItem.insert(QString("headerName"), QVariant(QString("Benutzername")));
+    headerItem.insert(QString("roleName"), QVariant(modelRoleName(UsernameRole)));
+    headerItem.insert(QString("placeHolder"), QVariant(QString("Horst Krampf")));
+    headerItem.insert(QString("editable"), QVariant(true));
+    headerItem.insert(QString("standardValue"), QVariant(QString()));
+    headerItem.insert(QString("dataType"), QVariant::String);
+    m_headerList << headerItem;
+    headerItem.insert(QString("headerName"), QVariant(QString("Passwort")));
+    headerItem.insert(QString("roleName"), QVariant(modelRoleName(PasswordRole)));
+    headerItem.insert(QString("placeHolder"), QVariant(QString("horst_123")));
+    headerItem.insert(QString("editable"), QVariant(true));
+    headerItem.insert(QString("standardValue"), QVariant(QString()));
+    headerItem.insert(QString("dataType"), QVariant::String);
+    m_headerList << headerItem;
+    headerItem.insert(QString("headerName"), QVariant(QString("Sicherheitsfrage")));
+    headerItem.insert(QString("roleName"), QVariant(modelRoleName(QuestionRole)));
+    headerItem.insert(QString("placeHolder"), QVariant(QString("Deine lieblings Farbe?")));
+    headerItem.insert(QString("editable"), QVariant(true));
+    headerItem.insert(QString("standardValue"), QVariant(QString()));
+    headerItem.insert(QString("dataType"), QVariant::String);
+    m_headerList << headerItem;
+    headerItem.insert(QString("headerName"), QVariant(QString("Antwort")));
+    headerItem.insert(QString("roleName"), QVariant(modelRoleName(AnswerRole)));
+    headerItem.insert(QString("placeHolder"), QVariant(QString("Grün")));
+    headerItem.insert(QString("editable"), QVariant(true));
+    headerItem.insert(QString("standardValue"), QVariant(QString()));
+    headerItem.insert(QString("dataType"), QVariant::String);
+    m_headerList << headerItem;
+    headerItem.insert(QString("headerName"), QVariant(QString("Passwortlänge")));
+    headerItem.insert(QString("roleName"), QVariant(modelRoleName(LengthRole)));
+    headerItem.insert(QString("placeHolder"), QVariant(QString("12")));
+    headerItem.insert(QString("editable"), QVariant(true));
+    headerItem.insert(QString("standardValue"), QVariant(12));
+    headerItem.insert(QString("dataType"), QVariant::Int);
+    m_headerList << headerItem;
+    headerItem.insert(QString("headerName"), QVariant(QString("Zeichensatz")));
+    headerItem.insert(QString("roleName"), QVariant(modelRoleName(DefinedCharacterRole)));
+    headerItem.insert(QString("placeHolder"), QVariant(QString("*[a-Z]*[0-9]")));
+    headerItem.insert(QString("editable"), QVariant(true));
+    headerItem.insert(QString("standardValue"), QVariant(QString("*[a-Z]*[0-9]")));
+    headerItem.insert(QString("dataType"), QVariant::String);
+    m_headerList << headerItem;
+    headerItem.insert(QString("headerName"), QVariant(QString("Letzte Änderung")));
+    headerItem.insert(QString("roleName"), QVariant(modelRoleName(LastModifyRole)));
+    headerItem.insert(QString("placeHolder"), QVariant(QString("Datum")));
+    headerItem.insert(QString("editable"), QVariant(false));
+    headerItem.insert(QString("standardValue"), QVariant(QString()));
+    headerItem.insert(QString("dataType"), QVariant::DateTime);
+    m_headerList << headerItem;
 }
