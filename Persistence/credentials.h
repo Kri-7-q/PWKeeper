@@ -9,7 +9,7 @@ class Credentials
 public:
     Credentials();
 
-    enum Key { Password, Username, DatabaseName, Hostname, Port };
+    enum Key { Password, Username, DatabaseName, Hostname, Port, TableName };
 
     void addValue(const Key key, const QString &value);
     QString value(const Key key) const;

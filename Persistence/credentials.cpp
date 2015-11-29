@@ -6,7 +6,7 @@
 Credentials::Credentials()
 {
     m_keyNames = QStringList() << QString("password") << QString("username") << QString("databasename")
-                               << QString("hostname") << QString("port");
+                               << QString("hostname") << QString("port") << QString("tablename");
 }
 
 /**

@@ -18,7 +18,8 @@ SOURCES += main.cpp \
     SqlDriver/PostgreSql/kqpostgresqldriver.cpp \
     SqlDriver/PostgreSql/kqpostgresqlresult.cpp \
     Persistence/psqldatabase.cpp \
-    Persistence/persistence.cpp
+    Persistence/persistence.cpp \
+    Persistence/postgresql.cpp
 
 RESOURCES += QML/qml.qrc \
              QML/pictures.qrc
@@ -45,7 +46,8 @@ HEADERS += \
     SqlDriver/PostgreSql/kqpostgresqldriver.h \
     SqlDriver/PostgreSql/kqpostgresqlresult.h \
     Persistence/psqldatabase.h \
-    Persistence/persistence.h
+    Persistence/persistence.h \
+    Persistence/postgresql.h
 
 DISTFILES +=
 
