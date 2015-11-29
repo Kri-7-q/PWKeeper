@@ -1,52 +1,36 @@
 #ifndef PERSISTENCE_H
 #define PERSISTENCE_H
 
-#include "Exception/sqlexception.h"
-#include <QStringList>
-#include <QVariantMap>
-#include <QSqlDatabase>
-#include <QSqlRecord>
+#include "tablemodel.h"
 
 class Persistence
 {
 public:
     Persistence();
 
-    // Gettter and Setter
-    QString tableName() const                       { return m_tableName; }
+    // Open and close persistence
+    virtual bool open() const = 0;
+    virtual void close() const = 0;
+    virtual bool isOpen() const                     { return m_isOpen; }
 
-    // Open and close database
-    QSqlDatabase openDatabase() const;
-    void closeDatabase(QSqlDatabase& db) const;
+    // Modify persistent objects.
+    virtual bool persistAccountObject(const QVariantMap& account) const = 0;
+    virtual bool deleteAccountObject(const QVariant& primaryKey) const = 0;
+    virtual bool modifyAccountObject(const QVariantMap& modifiedObject) const = 0;
 
-    // Modify database rows.
-    bool persistAccountObject(const QVariantMap& account, const QSqlDatabase& db) const;
-    bool deleteAccountObject(const int objectId, const QSqlDatabase& db) const;
-    bool modifyAccountObject(const int id, const QVariantMap& modifications, const QSqlDatabase& db) const;
+    // Read from persistence.
+    virtual QVariantMap findAccount(const QVariant& primaryKey) const = 0;
+    virtual QVariantMap findAccount(const QString& providerName, const QString& username) const = 0;
+    virtual QList<QVariantMap> allPersistedAccounts() const = 0;
 
-    // Public methods
-    QVariantMap findAccount(const int id, const QSqlDatabase& db) const;
-    QVariantMap findAccount(const QString& providerName, const QString& username, const QSqlDatabase &db) const;
-    QList<QVariantMap> findAccounts(const QVariantMap &searchObject) const;
-    QStringList getColumnNames(const QString tableName) const;
-    QList<QVariantMap> readWholeTable(const QString tableName) const;
-    QHash<QString, QVariant::Type> getTablesDataTypes() const;
+    // Model compability
+    virtual static QHash<int, QByteArray> getModelRoles();
 
-    // Static
-    static QHash<int, QByteArray> getTableModelRoles();
+protected:
+    void setOpen(const bool isOpen)                 { m_isOpen = isOpen; }
 
 private:
-    QString m_primaryKey;
-    QStringList m_uniqueKey;
-    QString m_tableName;
-    QSqlRecord m_record;
-
-    // Methods
-    QSqlRecord recordFromVariantMap(const QVariantMap& searchObject) const;
-    QSqlRecord recordFieldsWithValuesFromRecord(const QSqlRecord& sourceRecord) const;
-    QList<QVariantMap> getAccountList(QSqlQuery &query) const;
-    QVariantMap getAccountObject(const QSqlQuery& query, const QSqlRecord &record) const;
-    void initializeDatabase(QSqlDatabase &db) const;
+    bool m_isOpen;
 };
 
 #endif // PERSISTENCE_H

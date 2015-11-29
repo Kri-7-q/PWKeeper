@@ -35,12 +35,14 @@ void InsertationController::setModifiedData(const int row, const QVariantMap mod
  * @param newData       A map with inserted data.
  * @param roleList      A list of model roles (Keys of the QVariantMap).
  */
-void InsertationController::insertNewData(const QVariantMap newData)
+int InsertationController::insertNewData(const QVariantMap newData)
 {
     int row = m_pModel->appendEmptyRow();
     QModelIndex index = m_pModel->index(row);
     insertModifiedData(index, newData);
     m_pModel->setData(index, QVariant(TableModel::New), TableModel::StateRole);
+
+    return row;
 }
 
 /**

@@ -1,12 +1,12 @@
 #include "tablemodel.h"
-#include "Persistence/persistence.h"
+#include "Persistence/psqldatabase.h"
 
 // Constructor
 TableModel::TableModel(QObject *parent) :
     QAbstractListModel(parent),
     m_isModified(false)
 {
-    m_roles = Persistence::getTableModelRoles();
+    m_roles = PSqlDatabase::getTableModelRoles();
     m_roles.insert(StateRole, QString("state").toLocal8Bit());
     initializeHeaderData();
 }
@@ -90,9 +90,14 @@ QHash<int, QByteArray> TableModel::roleNames() const
 }
 
 /**
- * @brief TableModel::modelRowState
- * @param row
- * @return
+ * Get the state of a row in TableModel.
+ * If a row comes from persistence it do not have a state value.
+ * In that case state 'Origin' is returned. New created objects
+ * in the model have state 'New'. If an Account object is modified
+ * is gets the state 'Modified'. If the User delete an Account
+ * it is not removed from model but get the state 'Deleted'.
+ * @param row       A row in the model.
+ * @return          The current state of that row.
  */
 TableModel::ModelRowState TableModel::modelRowState(const int row) const
 {
