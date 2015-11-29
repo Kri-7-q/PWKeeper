@@ -5,11 +5,13 @@ import Controllers 1.0
 Item {
     id: root
 
+    // Controler of this view
     DialogController {
         id: showController
         model: tableModel
     }
 
+    // If this view is switched to visible then it sets the current selected row of ListView.
     onVisibleChanged: {
         if (visible === true) {
             modelRow = accountList.currentRow
@@ -34,12 +36,14 @@ Item {
             margins: 20
         }
 
+        // Shows as many fields as TableModel has columns. (each value of an Account object)
         Repeater {
             model: tableModel.columnCount()
 
             Row {
                 spacing: 10
 
+                // Values description field
                 Text {
                     width: root.descriptionWidth
                     text: tableModel.headerData(index, "headerName")
@@ -49,6 +53,7 @@ Item {
                         pixelSize: root.fontSize
                     }
                 }
+                // Value field
                 Text {
                     text: {
                         var roleName = tableModel.headerData(index, "roleName")

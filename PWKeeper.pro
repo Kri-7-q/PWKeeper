@@ -11,13 +11,14 @@ SOURCES += main.cpp \
     modifycontroler.cpp \
     Generator/pwgenerator.cpp \
     Generator/characterdefinition.cpp \
-    Persistence/persistence.cpp \
     Persistence/credentials.cpp \
     addcontroler.cpp \
     insertationcontroller.cpp \
     controller.cpp \
     SqlDriver/PostgreSql/kqpostgresqldriver.cpp \
-    SqlDriver/PostgreSql/kqpostgresqlresult.cpp
+    SqlDriver/PostgreSql/kqpostgresqlresult.cpp \
+    Persistence/psqldatabase.cpp \
+    Persistence/persistence.cpp
 
 RESOURCES += QML/qml.qrc \
              QML/pictures.qrc
@@ -37,13 +38,14 @@ HEADERS += \
     modifycontroler.h \
     Generator/pwgenerator.h \
     Generator/characterdefinition.h \
-    Persistence/persistence.h \
     Persistence/credentials.h \
     addcontroler.h \
     insertationcontroller.h \
     controller.h \
     SqlDriver/PostgreSql/kqpostgresqldriver.h \
-    SqlDriver/PostgreSql/kqpostgresqlresult.h
+    SqlDriver/PostgreSql/kqpostgresqlresult.h \
+    Persistence/psqldatabase.h \
+    Persistence/persistence.h
 
 DISTFILES +=
 

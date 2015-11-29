@@ -6,6 +6,7 @@ import Models 1.0
 Item {
     id: root
 
+    // Controler to this view
     AddController {
         id: addController
         model: tableModel
@@ -39,6 +40,7 @@ Item {
 
                 property alias text: entryTextField.text
 
+                // Value description field
                 Text {
                     width: descriptionWidth
                     text: tableModel.headerData(index, "headerName")
@@ -50,6 +52,7 @@ Item {
                     }
                 }
 
+                // Value input field
                 TextField {
                     id: entryTextField
                     width: root.width - entryRow.spacing - root.descriptionWidth - entryColumn.anchors.margins * 2

@@ -5,6 +5,7 @@ import Controllers 1.0
 Item {
     id:root
 
+    // Controler of this view
     ModifyController {
         id: modifyController
         model: tableModel
@@ -35,6 +36,7 @@ Item {
             margins: 20
         }
 
+        // Shows as many fields as an Account object has. (all columns in the model)
         Repeater {
             id: textFieldRepeater
             model: tableModel.columnCount()
@@ -45,6 +47,7 @@ Item {
 
                 property alias text: entryTextField.text
 
+                // Value description field
                 Text {
                     width: root.descriptionWidth
                     text: tableModel.headerData(index, "headerName")
@@ -54,6 +57,7 @@ Item {
                         bold: true
                     }
                 }
+                // Value input field (is visible if value is editable)
                 TextField {
                     id: entryTextField
                     width: root.width - entryRow.spacing - root.descriptionWidth - entryColumn.anchors.margins * 2
@@ -69,6 +73,7 @@ Item {
                         weight: root.fontWeigth
                     }
                 }
+                // Shows not editable values (is visible if value is not editable)
                 Text {
                     id: entryText
                     text: {

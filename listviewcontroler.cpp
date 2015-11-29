@@ -96,7 +96,7 @@ void ListViewControler::persistModelModifications(const QStringList editableRole
  */
 void ListViewControler::setModelContent()
 {
-    QList<QVariantMap> persistentData = m_database.readWholeTable(m_database.tableName());
+    QList<QVariantMap> persistentData = m_database.readWholeTable();
     m_pModel->resetContent(&persistentData);
 }
 

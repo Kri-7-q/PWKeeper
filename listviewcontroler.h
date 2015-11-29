@@ -1,7 +1,7 @@
 #ifndef LISTVIEWCONTROLER_H
 #define LISTVIEWCONTROLER_H
 
-#include "Persistence/persistence.h"
+#include "Persistence/psqldatabase.h"
 #include "controller.h"
 
 class ListViewControler : public Controller
@@ -21,7 +21,7 @@ private slots:
     void setModelContent();
 
 private:
-    Persistence m_database;
+    PSqlDatabase m_database;
 
     // Private Methods
     QVariantMap newAccountFromModel(const QModelIndex& index, const QStringList& editableRoles) const;

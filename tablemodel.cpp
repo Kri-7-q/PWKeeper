@@ -1,12 +1,12 @@
 #include "tablemodel.h"
-#include "Persistence/persistence.h"
+#include "Persistence/psqldatabase.h"
 
 // Constructor
 TableModel::TableModel(QObject *parent) :
     QAbstractListModel(parent),
     m_isModified(false)
 {
-    m_roles = Persistence::getTableModelRoles();
+    m_roles = PSqlDatabase::getTableModelRoles();
     m_roles.insert(StateRole, QString("state").toLocal8Bit());
     initializeHeaderData();
 }
@@ -90,9 +90,14 @@ QHash<int, QByteArray> TableModel::roleNames() const
 }
 
 /**
- * @brief TableModel::modelRowState
- * @param row
- * @return
+ * Get the state of a row in TableModel.
+ * If a row comes from persistence it do not have a state value.
+ * In that case state 'Origin' is returned. New created objects
+ * in the model have state 'New'. If an Account object is modified
+ * is gets the state 'Modified'. If the User delete an Account
+ * it is not removed from model but get the state 'Deleted'.
+ * @param row       A row in the model.
+ * @return          The current state of that row.
  */
 TableModel::ModelRowState TableModel::modelRowState(const int row) const
 {
@@ -110,9 +115,10 @@ TableModel::ModelRowState TableModel::modelRowState(const int row) const
 }
 
 /**
- * @brief TableModel::getRow
- * @param row
- * @return
+ * Get a complete row of the model. The whole Account
+ * object will be returned in a QVariantMap.
+ * @param row   A row in the model.
+ * @return      The Account object in that row.
  */
 QVariantMap TableModel::getRow(const int row) const
 {
@@ -156,7 +162,7 @@ bool TableModel::insertRows(int row, int count, const QModelIndex &parent)
 
 /**
  * Public
- * Get a role name from model role.
+ * Get a role name from model role enum.
  * All role names are content of a hashmap.
  * @param role      A model role.
  * @return          The role name as a string.
@@ -170,7 +176,7 @@ QString TableModel::modelRoleName(int role) const
 
 /**
  * Slot
- * Overload of function.
+ * Overloaded function.
  * @param row       The number of row in model.
  * @param role      The display role name.
  * @return          A QVariant containing the data or an empty QVariant.
