@@ -1,7 +1,7 @@
 #ifndef LISTVIEWCONTROLER_H
 #define LISTVIEWCONTROLER_H
 
-#include "Persistence/psqldatabase.h"
+#include "Persistence/persistencefactory.h"
 #include "controller.h"
 
 class ListViewControler : public Controller
@@ -10,22 +10,22 @@ class ListViewControler : public Controller
 
 public:
     explicit ListViewControler(QObject *parent = 0);
+    ~ListViewControler();
 
 signals:
 
 public slots:
     void deleteModelRow(const int row) const;
-    void persistModelModifications(const QStringList editableRoles) const;
+    void persistModelModifications() const;
 
 private slots:
     void setModelContent();
 
 private:
-    PSqlDatabase m_database;
+    Persistence* m_pPersistence;
 
     // Private Methods
-    QVariantMap newAccountFromModel(const QModelIndex& index, const QStringList& editableRoles) const;
-    QVariantMap modifications(const QModelIndex& index, const QVariantMap& origin) const;
+    QVariantMap accountWithEditableRoles(const QModelIndex& index) const;
 };
 
 #endif // LISTVIEWCONTROLER_H

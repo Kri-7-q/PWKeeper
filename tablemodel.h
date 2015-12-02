@@ -15,13 +15,15 @@ class TableModel : public QAbstractListModel
 public:
     explicit TableModel(QObject *parent = 0);
 
-    enum Roles { IdRole = Qt::UserRole, ProviderRole, UsernameRole, PasswordRole, LengthRole, DefinedCharacterRole,
-                 AnswerRole, QuestionRole, LastModifyRole, StateRole };
+    enum Role { StateRole = Qt::UserRole+50 };
     enum ModelRowState { Origin, Modified, Deleted, New };
+
+    void setHeaderContent(const QList<QVariantMap>& headerContent);
 
 signals:
     void isModifiedChanged();
     void dataStyleChanged();
+    void headerContentChanged();
 
 public slots:
     TableModel::ModelRowState modelRowState(const int row) const;
@@ -35,7 +37,7 @@ public:
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &index, int role) const;
     QVariant data(const QModelIndex &index, const QString &key) const;
-    bool setData(const QModelIndex &index, const QVariant &value, int role = ProviderRole);
+    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::UserRole);
     bool setData(const QModelIndex &index, const QVariant &value, const QString &key);
     void resetContent(const QList<QVariantMap> *newContent = NULL);
     QHash<int,QByteArray> roleNames() const;
@@ -43,7 +45,7 @@ public:
     bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex());
 
     // Concret class members
-    QVariantMap getRow(const int row) const;
+    QVariantMap getAccountObject(const int row) const;
     bool isModified() const;
     void setIsModified(bool isModified);
     int appendEmptyRow(const QVariantMap& standardData = QVariantMap());
@@ -51,11 +53,11 @@ public:
 private:
     QList<QVariantMap> m_rowList;
     QList<QVariantMap> m_headerList;
-    QHash<int, QByteArray> m_roles;
+    QHash<int, QByteArray> m_modelRoles;
     bool m_isModified;
 
-    // Private Methods
-    void initializeHeaderData();
+    // Methods
+    QHash<int, QByteArray> getModelRoles();
 };
 
 #endif // TABLEMODEL_H

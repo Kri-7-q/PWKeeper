@@ -4,7 +4,16 @@
 ListViewControler::ListViewControler(QObject *parent) :
     Controller(parent)
 {
+    m_pPersistence = PersistenceFactory::createPersistenceObj();
     connect(this, SIGNAL(modelChanged()), this, SLOT(setModelContent()));
+}
+
+/**
+ * Destructor
+ */
+ListViewControler::~ListViewControler()
+{
+    delete m_pPersistence;
 }
 
 /**
@@ -29,45 +38,53 @@ void ListViewControler::deleteModelRow(const int row) const
  * Store new model rows and modified rows into
  * database and delete Accounts from database.
  */
-void ListViewControler::persistModelModifications(const QStringList editableRoles) const
+void ListViewControler::persistModelModifications() const
 {
-    QSqlDatabase db;
-    try {
-    db = m_database.openDatabase();
+    if (! m_pPersistence->open()) {
+        qDebug() << "ListViewControler::persistModelModifications() --> m_pPersistence->open()";
+        qDebug() << "Could not open persistence.";
+        return;
+    }
     int row = 0, lastRow = m_pModel->rowCount();
     while (row < lastRow) {
         QModelIndex index = m_pModel->index(row);
         TableModel::ModelRowState state = (TableModel::ModelRowState)m_pModel->data(index, TableModel::StateRole).toInt();
         switch (state) {
         case TableModel::New: {
-            QVariantMap account = newAccountFromModel(index, editableRoles);
-            m_database.persistAccountObject(account, db);
-            // Read new Account from datafase.
-            QString provider = m_pModel->data(index, TableModel::ProviderRole).toString();
-            QString username = m_pModel->data(index, TableModel::UsernameRole).toString();
-            account = m_database.findAccount(provider, username, db);
-            // Update model. New Account got an id from database and last modify date.
-            QString role = m_pModel->modelRoleName(TableModel::IdRole);
-            m_pModel->setData(index, account.value(role), role);
-            role = m_pModel->modelRoleName(TableModel::LastModifyRole);
-            m_pModel->setData(index, account.value(role), role);
-            m_pModel->setData(index, QVariant(TableModel::Origin), TableModel::StateRole);
+            QVariantMap account = accountWithEditableRoles(index);
+            if (! m_pPersistence->persistAccountObject(account)) {
+                qDebug() << "ListViewControler::persistModelModifications() --> persistAccountObject(account)";
+                qDebug() << "Could not persist Account object.";
+            } else {
+                // Read new Account from datafase.
+                account = m_pPersistence->findAccount(account);
+                // Update model. New Account got an id from database and last modify date.
+                foreach (QString role, account.keys()) {
+                    QVariant value = account.value(role);
+                    m_pModel->setData(index, value, role);
+                }
+            }
             ++row;
             break;
         }
         case TableModel::Deleted: {
-            int objectId = m_pModel->data(index, TableModel::IdRole).toInt();
-            m_database.deleteAccountObject(objectId, db);
-            m_pModel->removeRow(row);
-            lastRow = m_pModel->rowCount();
+            QVariantMap account = m_pModel->getAccountObject(row);
+            if (! m_pPersistence->deleteAccountObject(account)) {
+                qDebug() << "ListViewControler::persistModelModifications() --> deleteAccountObject(account)";
+                qDebug() << "Could not delete Account object.";
+                ++row;
+            } else {
+                m_pModel->removeRow(row);
+                lastRow = m_pModel->rowCount();
+            }
             break;
         }
         case TableModel::Modified: {
-            int id = m_pModel->data(index, TableModel::IdRole).toInt();
-            QVariantMap originAccount = m_database.findAccount(id, db);
-            QVariantMap differences = modifications(index, originAccount);
-            m_database.modifyAccountObject(id, differences, db);
-            m_pModel->setData(index, QVariant(TableModel::Origin), TableModel::StateRole);
+            QVariantMap account = m_pModel->getAccountObject(row);
+            if (! m_pPersistence->modifyAccountObject(account)) {
+                qDebug() << "ListViewControler::persistModelModifications() --> modifyAccountObject(account)";
+                qDebug() << "Could not modify Account object.";
+            }
             ++row;
             break;
         }
@@ -76,13 +93,7 @@ void ListViewControler::persistModelModifications(const QStringList editableRole
             break;
         }
     }
-    db.close();
-    } catch (SqlException exception) {
-        qDebug() << exception.errorText();
-        qDebug() << exception.databaseError();
-        qDebug() << exception.sqlStatement();
-        db.close();
-    }
+    m_pPersistence->close();
 }
 
 /**
@@ -96,7 +107,8 @@ void ListViewControler::persistModelModifications(const QStringList editableRole
  */
 void ListViewControler::setModelContent()
 {
-    QList<QVariantMap> persistentData = m_database.readWholeTable();
+    m_pModel->setHeaderContent(m_pPersistence->getModelHeader());
+    QList<QVariantMap> persistentData = m_pPersistence->allPersistedAccounts();
     m_pModel->resetContent(&persistentData);
 }
 
@@ -109,39 +121,16 @@ void ListViewControler::setModelContent()
  * @param editableRoles     A list of all editable model roles.
  * @return account          A QVariantMap map with the new Account object.
  */
-QVariantMap ListViewControler::newAccountFromModel(const QModelIndex &index, const QStringList &editableRoles) const
+QVariantMap ListViewControler::accountWithEditableRoles(const QModelIndex &index) const
 {
     QVariantMap account;
-    foreach (QString role, editableRoles) {
-        QVariant value = m_pModel->data(index, role);
-        account.insert(role, value);
-    }
-    QString role = m_pModel->modelRoleName(TableModel::LastModifyRole);
-    QVariant value(QDateTime::currentDateTime());
-    account.insert(role, value);
-
-    return account;
-}
-
-/**
- * Takes the origin Account object and a model index. The origin Account
- * is compared to the Account object in the model. All differences are
- * returned in a QVariantMap object.
- * @param index     The index of the modified Account object in the model.
- * @param origin    The origin Account object before modification.
- * @return          The differences between origin and modified Account.
- */
-QVariantMap ListViewControler::modifications(const QModelIndex &index, const QVariantMap &origin) const
-{
-    QVariantMap differeces;
-    QStringList roleList = origin.keys();
-    foreach (QString roleName, roleList) {
-        QVariant originValue = origin.value(roleName);
-        QVariant modifiedValue = m_pModel->data(index, roleName);
-        if (modifiedValue != originValue) {
-            differeces.insert(roleName, modifiedValue);
+    for (int column=0; column<m_pModel->columnCount(); ++column) {
+        if (m_pModel->headerData(column, QString("editable")).toBool()) {
+            QString role = m_pModel->headerData(column, QString("roleName")).toString();
+            QVariant value = m_pModel->data(index, role);
+            account.insert(role, value);
         }
     }
 
-    return differeces;
+    return account;
 }

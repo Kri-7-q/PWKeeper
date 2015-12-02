@@ -1,4 +1,5 @@
 #include "insertationcontroller.h"
+#include "Persistence/persistence.h"
 
 InsertationController::InsertationController(QObject *parent) :
     Controller(parent)
@@ -54,9 +55,9 @@ int InsertationController::insertNewData(const QVariantMap newData)
  */
 QString InsertationController::generatePassword(const QVariantMap account)
 {
-    QString roleName = m_pModel->modelRoleName(TableModel::DefinedCharacterRole);
+    QString roleName = m_pModel->modelRoleName(Persistence::DefinedCharacterRole);
     QString definition = account.value(roleName, QVariant(QString())).toString();
-    roleName = m_pModel->modelRoleName(TableModel::LengthRole);
+    roleName = m_pModel->modelRoleName(Persistence::PasswordLengthRole);
     int length = account.value(roleName, QVariant(0)).toInt();
     PwGenerator generator;
     QString password = generator.passwordFromDefinition(length, definition);

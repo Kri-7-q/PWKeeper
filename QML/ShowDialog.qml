@@ -15,6 +15,7 @@ Item {
     onVisibleChanged: {
         if (visible === true) {
             modelRow = accountList.currentRow
+            inputFieldRepeater.model = tableModel.columnCount()
         }
     }
 
@@ -38,7 +39,8 @@ Item {
 
         // Shows as many fields as TableModel has columns. (each value of an Account object)
         Repeater {
-            model: tableModel.columnCount()
+            id: inputFieldRepeater
+            model: 0
 
             Row {
                 spacing: 10

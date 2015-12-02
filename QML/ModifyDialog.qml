@@ -15,6 +15,7 @@ Item {
         if (visible === true) {
             modelRow = accountList.currentRow
             errorText.text = ""
+            textFieldRepeater.model = tableModel.columnCount()
         }
     }
 
@@ -39,7 +40,7 @@ Item {
         // Shows as many fields as an Account object has. (all columns in the model)
         Repeater {
             id: textFieldRepeater
-            model: tableModel.columnCount()
+            model: 0
 
             Row {
                 id: entryRow

@@ -33,14 +33,12 @@ Item {
         }
         alternatingRowColors: false
 
-        TableViewColumn { role: "provider"; title: "Provider"; width: 150 }
-        TableViewColumn { role: "username"; title: "Benutzername"; width: 200 }
-
         headerDelegate: TableViewHeader { fontSize: 14; borderWidth: 0 }
         itemDelegate: TableViewItem { fontSize: 14; fontFamily: "Avenir" }
         rowDelegate: TableViewRow { height: 20 }
 
         Keys.onReturnPressed: controler.copyPasswordToClipboard(currentRow)
+        Component.onCompleted: tableModel.headerContentChanged.connect(createColumns())
     }
 
     // ---------------------------------------------------
@@ -113,9 +111,30 @@ Item {
                 text: qsTr("Save")
                 style: PushButtonStyle {}
                 visible: tableModel.isModified
-                onClicked: listViewController.persistModelModifications(dataInfoModel.getEditableRoles())
+                onClicked: listViewController.persistModelModifications()
             }
         } // END - Row (controlBarButtonRow)
     } // END - ControlBar (Rectangle)
+
+
+    // Function to create columns for TableView
+    function createColumns() {
+        var count = tableModel.columnCount()
+        for (var column=0; column<count; ++column) {
+            if (tableModel.headerData(column, "showColumn")) {
+                var role = tableModel.headerData(column, "roleName")
+                var title = tableModel.headerData(column, "headerName")
+                var columnObj = tableView.addColumn(comp)
+                columnObj.role = role
+                columnObj.title = title
+            }
+        }
+    }
+
+    Component {
+        id: comp
+        TableViewColumn {}
+    }
+
 }
 

@@ -5,6 +5,7 @@
 #include <QSqlQuery>
 #include <QSqlField>
 #include <QDateTime>
+#include <QDebug>
 
 /**
  * Constructor
@@ -13,6 +14,14 @@ PostgreSql::PostgreSql() :
     m_databaseIdentifier("local")
 {
     initialize();
+}
+
+/**
+ * Destructor
+ */
+PostgreSql::~PostgreSql()
+{
+
 }
 
 /**
@@ -49,19 +58,31 @@ bool PostgreSql::persistAccountObject(const QVariantMap &account) const
 {
     QVariantMap obj = account;
     obj.insert(QString("lastmodify"), QDateTime::currentDateTime());
-    QSqlRecord record = getRecordFromAccountObject(obj);
+    QSqlRecord record = recordFromAccountObject(obj);
     QSqlDatabase db = QSqlDatabase::database(m_databaseIdentifier, true);
     QString sqlInsert = db.driver()->sqlStatement(QSqlDriver::InsertStatement, m_tableName, record, true);
     QSqlQuery query(db);
     if (! query.prepare(sqlInsert)) {
-        // ToDo: provide error message
+        qDebug() << "PostgreSql::persistAccountObject() --> prepare(sqlStatement)";
+        qDebug() << "SQL: " << sqlInsert;
+        qDebug() << db.lastError().databaseText();
+        qDebug() << db.lastError().driverText();
         return false;
     }
     for (int index=0; index<record.count(); ++index) {
         query.addBindValue(record.value(index));
     }
 
-    return query.exec();
+    if(! query.exec()) {
+        qDebug() << "PostgreSql::persistAccountObject() --> exec()";
+        qDebug() << "SQL: " << sqlInsert;
+        qDebug() << "Values: " << query.boundValues();
+        qDebug() << db.lastError().databaseText();
+        qDebug() << db.lastError().driverText();
+        return false;
+    }
+
+    return true;
 }
 
 /**
@@ -71,23 +92,34 @@ bool PostgreSql::persistAccountObject(const QVariantMap &account) const
  * @param primaryKey        A unique Id to identify Account object.
  * @return                  True if deleted. Otherwise false.
  */
-bool PostgreSql::deleteAccountObject(const QVariant &primaryKey) const
+bool PostgreSql::deleteAccountObject(const QVariantMap &account) const
 {
     QSqlDatabase db = QSqlDatabase::database(m_databaseIdentifier, true);
-    QSqlRecord tableInfo = db.record(m_tableName);
-    QString sqlDelete = db.driver()->sqlStatement(QSqlDriver::DeleteStatement, m_tableName, tableInfo, false);
-    QSqlRecord whereRecord;
-    whereRecord.append(tableInfo.field(QString("id")));
+    QString sqlDelete = db.driver()->sqlStatement(QSqlDriver::DeleteStatement, m_tableName, m_record, false);
+    QSqlRecord whereRecord = recordWithIdentifier(account);
     QString whereClause = db.driver()->sqlStatement(QSqlDriver::WhereStatement, m_tableName, whereRecord, true);
-    sqlDelete.append(whereClause);
+    sqlDelete.append(' ').append(whereClause);
     QSqlQuery query(db);
     if (! query.prepare(sqlDelete)) {
-        // ToDo: provide error message
+        qDebug() << "PostgreSql::deleteAccountObject() --> prepare(sqlStatement)";
+        qDebug() << "SQL: " << sqlDelete;
+        qDebug() << db.lastError().databaseText();
+        qDebug() << db.lastError().driverText();
         return false;
     }
-    query.addBindValue(primaryKey);
+    for (int index=0; index<whereRecord.count(); ++index) {
+        query.addBindValue(whereRecord.value(index));
+    }
 
-    return query.exec();
+    if(! query.exec()) {
+        qDebug() << "PostgreSql::deleteAccountObject() --> exec()";
+        qDebug() << "SQL: " << sqlDelete;
+        qDebug() << db.lastError().databaseText();
+        qDebug() << db.lastError().driverText();
+        return false;
+    }
+
+    return true;
 }
 
 /**
@@ -101,40 +133,48 @@ bool PostgreSql::deleteAccountObject(const QVariant &primaryKey) const
  */
 bool PostgreSql::modifyAccountObject(const QVariantMap &modifiedObject) const
 {
-    QVariantMap origin;
-    if (modifiedObject.contains(QString("id"))) {
-        origin = findAccount(modifiedObject.value(QString("id")));
-    } else {
-        QString provider = modifiedObject.value(QString("provider")).toString();
-        QString username = modifiedObject.value(QString("username")).toString();
-        origin = findAccount(provider, username);
+    QVariantMap origin = findAccount(modifiedObject);
+    if (origin.isEmpty()) {
+        qDebug() << "PostgreSql::modifyAccountObject() --> findAccount(origin)";
+        qDebug() << "Could not find the origin Account object in database.";
+        return false;
     }
-    QVariantMap differences = getModifications(origin, modifiedObject);
+    QVariantMap differences = differenceToOrigin(origin, modifiedObject);
     if (differences.isEmpty()) {
         return true;
     }
     differences.insert(QString("lastmodify"), QDateTime::currentDateTime());
-    QSqlRecord record = getRecordFromAccountObject(differences);
+    QSqlRecord record = recordFromAccountObject(differences);
     QSqlDatabase db = QSqlDatabase::database(m_databaseIdentifier, true);
     QString sqlUpdate = db.driver()->sqlStatement(QSqlDriver::UpdateStatement, m_tableName, record, true);
-    QSqlRecord tableInfo = db.record(m_tableName);
-    QSqlField primaryKey = tableInfo.field(QString("id"));
-    primaryKey.setValue(origin.value(QString("id")));
-    QSqlRecord whereRecord;
-    whereRecord.append(primaryKey);
+    QSqlRecord whereRecord = recordWithIdentifier(origin);
     QString whereClause = db.driver()->sqlStatement(QSqlDriver::WhereStatement, m_tableName, whereRecord, true);
-    record.append(primaryKey);
-    sqlUpdate.append(whereClause);
+    sqlUpdate.append(' ').append(whereClause);
     QSqlQuery query(db);
     if (! query.prepare(sqlUpdate)) {
-        // ToDo: provide error message
+        qDebug() << "PostgreSql::modifyAccountObject() --> prepare(sqlStatement)";
+        qDebug() << "SQL: " << sqlUpdate;
+        qDebug() << db.lastError().databaseText();
+        qDebug() << db.lastError().driverText();
         return false;
     }
-    for (int index=0; index<record.count(); index) {
+    for (int index=0; index<record.count(); ++index) {
         query.addBindValue(record.value(index));
     }
+    for (int index=0; index<whereRecord.count(); ++index) {
+        query.addBindValue(whereRecord.value(index));
+    }
 
-    return query.exec();
+    if(! query.exec()) {
+        qDebug() << "PostgreSql::modifyAccountObject() --> exec()";
+        qDebug() << "SQL: " << sqlUpdate;
+        qDebug() << "Values: " << query.boundValues();
+        qDebug() << db.lastError().databaseText();
+        qDebug() << db.lastError().driverText();
+        return false;
+    }
+
+    return true;
 }
 
 /**
@@ -143,68 +183,30 @@ bool PostgreSql::modifyAccountObject(const QVariantMap &modifiedObject) const
  * @param primaryKey        A unique value which identifies an Account object in persistence.
  * @return account          An Account object or an empty map.
  */
-QVariantMap PostgreSql::findAccount(const QVariant &primaryKey) const
+QVariantMap PostgreSql::findAccount(const QVariantMap &searchObj) const
 {
     QVariantMap account;
-    if (! open()) {
-        // ToDo: provide error message
-        return account;
-    }
     QSqlDatabase db = QSqlDatabase::database(m_databaseIdentifier, true);
-    QSqlRecord record = db.record(m_tableName);
-    QString sqlSelect = db.driver()->sqlStatement(QSqlDriver::SelectStatement, m_tableName, record, false);
-    QSqlRecord whereRecord;
-    whereRecord.append(record.field(QString("id")));
+    QString sqlSelect = db.driver()->sqlStatement(QSqlDriver::SelectStatement, m_tableName, m_record, false);
+    QSqlRecord whereRecord = recordWithIdentifier(searchObj);
     QString whereClause = db.driver()->sqlStatement(QSqlDriver::WhereStatement, m_tableName, whereRecord, true);
-    sqlSelect.append(whereClause);
+    sqlSelect.append(' ').append(whereClause);
     QSqlQuery query(db);
     if (! query.prepare(sqlSelect)) {
-        // ToDo: provide error message
+        qDebug() << "PostgreSql::findAccount(searchObj) --> prepare(sqlStatement)";
+        qDebug() << "SQL: " << sqlSelect;
+        qDebug() << db.lastError().databaseText();
+        qDebug() << db.lastError().driverText();
         return account;
     }
-    query.addBindValue(primaryKey);
+    for (int index=0; index<whereRecord.count(); ++index) {
+        query.addBindValue(whereRecord.value(index));
+    }
     if (! query.exec()) {
-        // ToDo: provide error message
-        return account;
-    }
-    if (query.next()) {
-        account = getAccountObject(query.record());
-    }
-
-    return account;
-}
-
-/**
- * Override
- * Read an Account object from persistence with the unique values 'provider' and 'username'.
- * @param providerName
- * @param username
- * @return                  An Account object or an empty map.
- */
-QVariantMap PostgreSql::findAccount(const QString &providerName, const QString &username) const
-{
-    QVariantMap account;
-    if (! open()) {
-        // ToDo: provide error message
-        return account;
-    }
-    QSqlDatabase db = QSqlDatabase::database(m_databaseIdentifier, true);
-    QSqlRecord record = db.record(m_tableName);
-    QString sqlSelect = db.driver()->sqlStatement(QSqlDriver::SelectStatement, m_tableName, record, false);
-    QSqlRecord whereRecord;
-    whereRecord.append(record.field(QString("provider")));
-    whereRecord.append(record.field(QString("username")));
-    QString whereClause = db.driver()->sqlStatement(QSqlDriver::WhereStatement, m_tableName, whereRecord, true);
-    sqlSelect.append(whereClause);
-    QSqlQuery query(db);
-    if (! query.prepare(sqlSelect)) {
-        // ToDo: provide error message
-        return account;
-    }
-    query.addBindValue(QVariant(providerName));
-    query.addBindValue(QVariant(username));
-    if (! query.exec()) {
-        // ToDo: provide error mesage
+        qDebug() << "PostgreSql::findAccount(searchObj) --> exec()";
+        qDebug() << "SQL: " << sqlSelect;
+        qDebug() << db.lastError().databaseText();
+        qDebug() << db.lastError().driverText();
         return account;
     }
     if (query.next()) {
@@ -222,16 +224,24 @@ QVariantMap PostgreSql::findAccount(const QString &providerName, const QString &
 QList<QVariantMap> PostgreSql::allPersistedAccounts() const
 {
     QList<QVariantMap> accountList;
-    if (! open()) {
-        // ToDo:    provide error messages.
+    QSqlDatabase db = QSqlDatabase::database(m_databaseIdentifier, true);
+    if (! db.isOpen()) {
+        qDebug() << "PostgreSql::allPersistedAccounts() --> isOpen()";
+        qDebug() << db.lastError().databaseText();
+        qDebug() << db.lastError().driverText();
         return accountList;
     }
-    QSqlDatabase db = QSqlDatabase::database(m_databaseIdentifier, true);
     QSqlRecord record = db.record(m_tableName);
     QString sqlSelect = db.driver()->sqlStatement(QSqlDriver::SelectStatement, m_tableName, record, false);
     QSqlQuery query(sqlSelect, db);
     while (query.next()) {
         accountList << getAccountObject(query.record());
+    }
+    if (accountList.isEmpty()) {
+        qDebug() << "PostgreSql::allPersistedAccounts() --> query(sqlStatement, db)";
+        qDebug() << "SQL: " << sqlSelect;
+        qDebug() << db.lastError().databaseText();
+        qDebug() << db.lastError().driverText();
     }
     db.close();
 
@@ -256,6 +266,13 @@ void PostgreSql::initialize()
     db.setUserName(credentials.value(Credentials::Username));
     db.setPassword(credentials.value(Credentials::Password));
     m_tableName = credentials.value(Credentials::TableName);
+    if (db.open()) {
+        m_record = db.record(m_tableName);
+    } else {
+        qDebug() << "PostgreSql::initialize() --> db.open()";
+        qDebug() << db.lastError().databaseText();
+        qDebug() << db.lastError().driverText();
+    }
 }
 
 /**
@@ -277,6 +294,33 @@ QVariantMap PostgreSql::getAccountObject(const QSqlRecord &record) const
 }
 
 /**
+ * Creats a record object with database key fields for a where clause.
+ * @param account
+ * @return
+ */
+QSqlRecord PostgreSql::recordWithIdentifier(const QVariantMap &account) const
+{
+    QSqlRecord record;
+    QSqlField field;
+    QString id("id"), provider("provider"), username("username");
+    if (account.contains(id)) {
+        field = m_record.field(id);
+        field.setValue(account.value(id));
+        record.append(field);
+
+        return record;
+    }
+    field = m_record.field(provider);
+    field.setValue(account.value(provider));
+    record.append(field);
+    field = m_record.field(username);
+    field.setValue(account.value(username));
+    record.append(field);
+
+    return record;
+}
+
+/**
  * Private
  * Get a record object from Account object.
  * Returned record object contains columns and values.
@@ -284,15 +328,15 @@ QVariantMap PostgreSql::getAccountObject(const QSqlRecord &record) const
  * @param account
  * @return record       A record with columns and values.
  */
-QSqlRecord PostgreSql::getRecordFromAccountObject(const QVariantMap &account) const
+QSqlRecord PostgreSql::recordFromAccountObject(const QVariantMap &account) const
 {
-    QSqlDatabase db = QSqlDatabase::database(m_databaseIdentifier, true);
-    QSqlRecord tableInfo = db.record(m_tableName);
     QSqlRecord record;
     foreach (QString column, account.keys()) {
-        QSqlField field = tableInfo.field(column);
-        field.setValue(account.value(column));
-        record.append(field);
+        if (m_record.contains(column)) {
+            QSqlField field = m_record.field(column);
+            field.setValue(account.value(column));
+            record.append(field);
+        }
     }
 
     return record;
@@ -306,12 +350,10 @@ QSqlRecord PostgreSql::getRecordFromAccountObject(const QVariantMap &account) co
  * @param modified
  * @return differences      A map with differences between origin and modified.
  */
-QVariantMap PostgreSql::getModifications(const QVariantMap &origin, const QVariantMap &modified) const
+QVariantMap PostgreSql::differenceToOrigin(const QVariantMap &origin, const QVariantMap &modified) const
 {
-    QStringList keyList = origin.keys() << modified.keys();
-    QSet<QString> keySet = keyList.toSet();
     QVariantMap differences;
-    foreach (QString key, keySet) {
+    foreach (QString key, modified.keys()) {
         QVariant originVal = origin.value(key);
         QVariant modifiedVal = modified.value(key);
         if (originVal != modifiedVal) {
