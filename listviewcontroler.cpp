@@ -18,7 +18,7 @@ ListViewControler::~ListViewControler()
 
 /**
  * Delete a row in the TableView model.
- * Marks a row as deleted in the model.
+ * Marks a row as deleted in the model but keep it until deleted from persistence.
  * If a row has model row state New than the row is deleted immediately.
  * @param row
  */
@@ -102,8 +102,9 @@ void ListViewControler::persistModelModifications() const
  * Is called when a model is set to the controler.
  * Signal is connected to this slot in constructor.
  * All content of database is set to the model.
- * Data types to the model roles are read from database.
- * (Role names are equal to database column names.)
+ * Model header data are set from Persistence.
+ * Signal 'headerDataChanged()' is emitted. This
+ * forces the TableView to create its columns.
  */
 void ListViewControler::setModelContent()
 {
@@ -113,13 +114,11 @@ void ListViewControler::setModelContent()
 }
 
 /**
- * Reads all editable values of a new account in the model.
+ * Reads all editable values of an account in the model.
  * Values are stored in a QVariantMap with model role names
  * (database column names) as keys.
- * Adds the current date and time to LastModifyRole.
- * @param index             Model index of the new entry.
- * @param editableRoles     A list of all editable model roles.
- * @return account          A QVariantMap map with the new Account object.
+ * @param index             Model index of the Account object.
+ * @return account          A QVariantMap map with the Account object.
  */
 QVariantMap ListViewControler::accountWithEditableRoles(const QModelIndex &index) const
 {

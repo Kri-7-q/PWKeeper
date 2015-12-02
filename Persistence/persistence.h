@@ -1,6 +1,17 @@
 #ifndef PERSISTENCE_H
 #define PERSISTENCE_H
 
+/* ------------------------------------------------------------------------------
+ * Class Persistence
+ *
+ * Its an abstract class with most methods are pure virtual. This is just a
+ * interface for a concret persistence class. There are a factory with creates
+ * a instance of the concret class.
+ * To use your own persistence you should subclass this interface and modify
+ * the PersistenceFactory.
+ * ------------------------------------------------------------------------------
+ */
+
 #include "tablemodel.h"
 
 class Persistence
@@ -28,10 +39,11 @@ public:
     virtual QVariantMap findAccount(const QVariantMap& searchObj) const = 0;
 
     // Read from persistence.
-    // These methods open database connection by their selfs and close it afterwarts.
+    // These methods open database connection by it self and close it afterwarts.
     virtual QList<QVariantMap> allPersistedAccounts() const = 0;
 
     // Model and Application compability
+    // See description of standard implementation.
     virtual QList<QVariantMap> getModelHeader() const;
 
 protected:

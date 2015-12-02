@@ -10,6 +10,9 @@ TableModel::TableModel(QObject *parent) :
 /**
  * Public
  * Setter - TableModel header content.
+ * Model header is a list of QVariantMap objects. A map provide
+ * mata data for the TableView control. These data should be provided
+ * from persistence class.
  * @param headerContent
  */
 void TableModel::setHeaderContent(const QList<QVariantMap> &headerContent)
@@ -171,7 +174,7 @@ bool TableModel::insertRows(int row, int count, const QModelIndex &parent)
 /**
  * Public
  * Get a role name from model role enum.
- * All role names are content of a hashmap.
+ * All role names are content of a hashmap (Account object).
  * @param role      A model role.
  * @return          The role name as a string.
  */
@@ -185,6 +188,7 @@ QString TableModel::modelRoleName(int role) const
 /**
  * Slot
  * Overloaded function.
+ * For use in QML where a QModelIndex can not be created.
  * @param row       The number of row in model.
  * @param role      The display role name.
  * @return          A QVariant containing the data or an empty QVariant.
@@ -215,6 +219,10 @@ int TableModel::columnCount() const
  */
 QVariant TableModel::headerData(const int section, const QString &role) const
 {
+    if (section < 0 || section >= m_headerList.size()) {
+        return QVariant();
+    }
+
     return m_headerList[section].value(role);
 }
 
@@ -242,6 +250,8 @@ int TableModel::appendEmptyRow(const QVariantMap &standardData)
 /**
  * Private
  * Extract model rolesId's and role names from header data.
+ * Model role enums and names to provide it through method
+ * 'roleName()' to the QML GUI.
  * @return
  */
 QHash<int, QByteArray> TableModel::getModelRoles()
@@ -267,6 +277,7 @@ QHash<int, QByteArray> TableModel::getModelRoles()
  */
 bool TableModel::removeRows(int row, int count, const QModelIndex &parent)
 {
+    Q_UNUSED(parent)
     int firstRow = row;
     int lastRow = row + count - 1;
     if (firstRow < 0 || lastRow >= m_rowList.size()) {

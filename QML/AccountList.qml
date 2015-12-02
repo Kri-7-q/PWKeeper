@@ -118,6 +118,8 @@ Item {
 
 
     // Function to create columns for TableView
+    // It gets roleName and header name from TableModel header data.
+    // Importent: This function do not remove any previous columns from TableView.
     function createColumns() {
         var count = tableModel.columnCount()
         for (var column=0; column<count; ++column) {

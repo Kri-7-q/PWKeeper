@@ -1,6 +1,14 @@
 #ifndef TABLEMODEL_H
 #define TABLEMODEL_H
 
+/* ------------------------------------------------------------------------------------
+ * Class TableModel
+ *
+ * the Applications model which keep all Accounts after they are loaded from
+ * persistence.
+ * ------------------------------------------------------------------------------------
+ */
+
 #include <QAbstractListModel>
 #include <QList>
 #include <QVariantMap>

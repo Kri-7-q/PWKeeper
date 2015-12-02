@@ -1,6 +1,15 @@
 #ifndef INSERTATIONCONTROLLER_H
 #define INSERTATIONCONTROLLER_H
 
+/* ----------------------------------------------------------------------------
+ * Class InsertationController
+ *
+ * This class is an extension to class Controller. Its for use in MVC pattern.
+ * This class provides elementary funktionality for each controller which
+ * is used for input dialogs.
+ * ----------------------------------------------------------------------------
+ */
+
 #include "controller.h"
 #include "Generator/pwgenerator.h"
 

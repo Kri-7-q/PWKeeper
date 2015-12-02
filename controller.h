@@ -1,6 +1,13 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
+/* ---------------------------------------------------------------------
+ * Class Controller
+ *
+ * This class provides elementary funktionality for MVC controllers.
+ * ---------------------------------------------------------------------
+ */
+
 #include "tablemodel.h"
 
 class Controller : public QObject

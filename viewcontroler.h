@@ -1,6 +1,13 @@
 #ifndef VIEWCONTROLER_H
 #define VIEWCONTROLER_H
 
+/* --------------------------------------------------------------------
+ * Class ViewControler
+ *
+ * The controller which switches between the different views.
+ * --------------------------------------------------------------------
+ */
+
 #include <QObject>
 
 class ViewControler : public QObject

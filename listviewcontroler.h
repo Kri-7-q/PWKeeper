@@ -1,6 +1,16 @@
 #ifndef LISTVIEWCONTROLER_H
 #define LISTVIEWCONTROLER_H
 
+/* ------------------------------------------------------------------------
+ * Class ListViewControler
+ *
+ * Controller of a MVC pattern.
+ * This is the controller between the view wich provides a list of
+ * account objects and the model.
+ * It has access to the persistence too.
+ * ------------------------------------------------------------------------
+ */
+
 #include "Persistence/persistencefactory.h"
 #include "controller.h"
 
