@@ -452,16 +452,19 @@ void KQPostgreSqlResult::freeCStringArray(char **array, const int size)
 
 /**
  * Copy QString to cstring.
+ * Creates a string in heap and return a pointer to it.
  * @param origin
- * @return
+ * @return string       A null terminated cstring pointer.
  */
 char *KQPostgreSqlResult::stringCopy(const QString &origin) const
 {
     QByteArray source = origin.toLocal8Bit();
-    char* string = new char[source.length()];
+    int length = source.length();
+    char* string = new char[length + 1];
     for (int index=0; index<source.size(); ++index) {
         string[index] = source.at(index);
     }
+    string[length] = 0;
 
     return string;
 }
