@@ -24,9 +24,9 @@ void InsertationController::setModifiedData(const int row, const QVariantMap mod
     QModelIndex index = m_pModel->index(row);
     bool hasModifications = insertModifiedData(index, modifiedData);
     // Mark model row as modified if data was realy modified.
-    TableModel::ModelRowState state = (TableModel::ModelRowState)m_pModel->data(index, TableModel::StateRole).toInt();
-    if (hasModifications && state != TableModel::New) {
-        m_pModel->setData(index, QVariant(TableModel::Modified), TableModel::StateRole);
+    ModelRowState state = (ModelRowState)m_pModel->data(index, StateRole).toInt();
+    if (hasModifications && state != New) {
+        m_pModel->setData(index, QVariant(Modified), StateRole);
     }
 }
 
@@ -36,14 +36,13 @@ void InsertationController::setModifiedData(const int row, const QVariantMap mod
  * @param newData       A map with inserted data.
  * @param roleList      A list of model roles (Keys of the QVariantMap).
  */
-int InsertationController::insertNewData(const QVariantMap newData)
+void InsertationController::insertNewData(const QVariantMap newData)
 {
-    int row = m_pModel->appendEmptyRow();
+    int row = m_pModel->rowCount();
+    m_pModel->insertRow(row);
     QModelIndex index = m_pModel->index(row);
     insertModifiedData(index, newData);
-    m_pModel->setData(index, QVariant(TableModel::New), TableModel::StateRole);
-
-    return row;
+    m_pModel->setData(index, QVariant(New), StateRole);
 }
 
 /**
@@ -55,9 +54,9 @@ int InsertationController::insertNewData(const QVariantMap newData)
  */
 QString InsertationController::generatePassword(const QVariantMap account)
 {
-    QString roleName = m_pModel->modelRoleName(Persistence::DefinedCharacterRole);
+    QString roleName = m_pModel->modelRoleName(DefinedCharacterRole);
     QString definition = account.value(roleName, QVariant(QString())).toString();
-    roleName = m_pModel->modelRoleName(Persistence::PasswordLengthRole);
+    roleName = m_pModel->modelRoleName(PasswordLengthRole);
     int length = account.value(roleName, QVariant(0)).toInt();
     PwGenerator generator;
     QString password = generator.passwordFromDefinition(length, definition);
@@ -80,16 +79,17 @@ bool InsertationController::insertModifiedData(const QModelIndex &index, const Q
 {
     bool hasModifications = false;
     for(int column=0; column<m_pModel->columnCount(); ++column) {
-        if (! m_pModel->headerData(column, "editable").toBool()) {
+        if (! m_pModel->headerData(column, Qt::Horizontal, EditableRole).toBool()) {
             continue;
         }
-        QString role = m_pModel->headerData(column, "roleName").toString();
+        QString role = m_pModel->headerData(column, Qt::Horizontal, DataRoleNameRole).toString();
         QVariant value = modifiedData.value(role, QVariant());
-        QVariant original = m_pModel->data(index, role);
-        QVariant::Type dataType = m_pModel->headerData(column, "dataType").type();
+        int roleId = m_pModel->headerData(column, Qt::Horizontal, DataRoleIdRole).toInt();
+        QVariant original = m_pModel->data(index, roleId);
+        QVariant::Type dataType = m_pModel->headerData(column, Qt::Horizontal, DataTypeRole).type();
         if (value.convert(dataType)) {
             if (value != original) {
-                m_pModel->setData(index, value, role);
+                m_pModel->setData(index, value, roleId);
                 hasModifications = true;
             }
         }

@@ -8,26 +8,27 @@
  * ---------------------------------------------------------------------
  */
 
-#include "tablemodel.h"
+#include "abstracttableviewmodel.h"
 
 class Controller : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(TableModel* model READ model WRITE setModel NOTIFY modelChanged)
+    Q_PROPERTY(AbstractTableViewModel* model READ model WRITE setModel NOTIFY modelChanged)
 
 public:
     explicit Controller(QObject *parent = 0);
 
-    void setModel(TableModel* pModel);
-    TableModel* model() const;
+    void setModel(AbstractTableViewModel *pModel);
+    AbstractTableViewModel *model() const;
 
 signals:
     void modelChanged();
 
 public slots:
+    QVariant modelData(const int section, const int row) const;
 
 protected:
-    TableModel* m_pModel;
+    AbstractTableViewModel* m_pModel;
 };
 
 #endif // CONTROLLER_H

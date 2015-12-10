@@ -8,14 +8,14 @@ Item {
     // Controler of this view
     DialogController {
         id: showController
-        model: tableModel
+        model: tableViewModel
     }
 
     // If this view is switched to visible then it sets the current selected row of ListView.
     onVisibleChanged: {
         if (visible === true) {
             modelRow = accountList.currentRow
-            inputFieldRepeater.model = tableModel.columnCount()
+            inputFieldRepeater.model = tableViewModel.columnCount()
         }
     }
 
@@ -48,7 +48,7 @@ Item {
                 // Values description field
                 Text {
                     width: root.descriptionWidth
-                    text: tableModel.headerData(index, "headerName")
+                    text: tableViewModel.headerData(index, "headerName")
                     font {
                         bold: true
                         family: root.fontFamily
@@ -57,10 +57,7 @@ Item {
                 }
                 // Value field
                 Text {
-                    text: {
-                        var roleName = tableModel.headerData(index, "roleName")
-                        tableModel.data(root.modelRow, roleName)
-                    }
+                    text: showController.modelData(index, modelRow)
                     font {
                         family: root.fontFamily
                         pixelSize: root.fontSize

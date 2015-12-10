@@ -3,8 +3,6 @@ TEMPLATE = app
 QT += qml quick widgets sql
 
 SOURCES += main.cpp \
-    tablemodel.cpp \
-    account.cpp \
     Exception/sqlexception.cpp \
     listviewcontroler.cpp \
     viewcontroler.cpp \
@@ -19,7 +17,9 @@ SOURCES += main.cpp \
     SqlDriver/PostgreSql/kqpostgresqlresult.cpp \
     Persistence/persistence.cpp \
     Persistence/postgresql.cpp \
-    Persistence/persistencefactory.cpp
+    Persistence/persistencefactory.cpp \
+    tableviewmodel.cpp \
+    abstracttableviewmodel.cpp
 
 RESOURCES += QML/qml.qrc \
              QML/pictures.qrc
@@ -31,8 +31,6 @@ QML_IMPORT_PATH =
 include(deployment.pri)
 
 HEADERS += \
-    tablemodel.h \
-    account.h \
     Exception/sqlexception.h \
     listviewcontroler.h \
     viewcontroler.h \
@@ -47,7 +45,10 @@ HEADERS += \
     SqlDriver/PostgreSql/kqpostgresqlresult.h \
     Persistence/persistence.h \
     Persistence/postgresql.h \
-    Persistence/persistencefactory.h
+    Persistence/persistencefactory.h \
+    modelconstants.h \
+    tableviewmodel.h \
+    abstracttableviewmodel.h
 
 DISTFILES +=
 

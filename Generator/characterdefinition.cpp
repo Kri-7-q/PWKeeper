@@ -1,19 +1,20 @@
 #include "characterdefinition.h"
 
-/**
- * Constructor
+/*! Constructor
+ *
  * Standard
  */
 CharacterDefinition::CharacterDefinition()
 {
 }
 
-/**
- * Constructor
+/*! Constructor
+ *
  * Creates a CharacterDefinition object with a range of characters.
- * @param amount
- * @param from
- * @param to
+ * Based on character table used by the system like UTF8.
+ * @param amount    How much character should be used of that range.
+ * @param from      First character in range.
+ * @param to        Last character in range.
  */
 CharacterDefinition::CharacterDefinition(unsigned short amount, QChar from, QChar to) :
     m_amount(amount)
@@ -26,11 +27,11 @@ CharacterDefinition::CharacterDefinition(unsigned short amount, QChar from, QCha
     }
 }
 
-/**
- * Constructor
+/*! Constructor
+ *
  * Creates a CharacterDefinition object with a set of character.
- * @param amount
- * @param characterList
+ * @param amount            How much characters should be taken from that set.
+ * @param characterList     A list of characters.
  */
 CharacterDefinition::CharacterDefinition(unsigned short amount, QList<QChar> characterList) :
     m_amount(amount)
@@ -40,7 +41,8 @@ CharacterDefinition::CharacterDefinition(unsigned short amount, QList<QChar> cha
     }
 }
 
-/**
+/*! Private
+ *
  * Build a list of chararcters in a range.
  * @param from      Start of range.
  * @param to        End od range.

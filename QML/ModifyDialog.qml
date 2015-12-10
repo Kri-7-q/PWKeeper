@@ -8,14 +8,14 @@ Item {
     // Controler of this view
     ModifyController {
         id: modifyController
-        model: tableModel
+        model: tableViewModel
     }
 
     onVisibleChanged: {
         if (visible === true) {
             modelRow = accountList.currentRow
             errorText.text = ""
-            textFieldRepeater.model = tableModel.columnCount()
+            textFieldRepeater.model = tableViewModel.columnCount()
         }
     }
 
@@ -51,7 +51,7 @@ Item {
                 // Value description field
                 Text {
                     width: root.descriptionWidth
-                    text: tableModel.headerData(index, "headerName")
+                    text: tableViewModel.headerData(index, "headerName")
                     font {
                         family: root.fontFamily
                         pixelSize: root.fontSize
@@ -62,12 +62,9 @@ Item {
                 TextField {
                     id: entryTextField
                     width: root.width - entryRow.spacing - root.descriptionWidth - entryColumn.anchors.margins * 2
-                    text: {
-                        var roleName = tableModel.headerData(index, "roleName")
-                        tableModel.data(modelRow, roleName)
-                    }
-                    placeholderText: tableModel.headerData(index, "placeHolder")
-                    visible: tableModel.headerData(index, "editable")
+                    text: modifyController.modelData(index, modelRow)
+                    placeholderText: tableViewModel.headerData(index, "placeHolder")
+                    visible: tableViewModel.headerData(index, "editable")
                     font {
                         family: root.fontFamily
                         pixelSize: root.fontSize
@@ -77,11 +74,8 @@ Item {
                 // Shows not editable values (is visible if value is not editable)
                 Text {
                     id: entryText
-                    text: {
-                        var roleName = tableModel.headerData(index, "roleName")
-                        tableModel.data(modelRow, roleName)
-                    }
-                    visible: !tableModel.headerData(index, "editable")
+                    text: modifyController.modelData(index, modelRow)
+                    visible: !tableViewModel.headerData(index, "editable")
                     font {
                         family: root.fontFamily
                         pixelSize: root.fontSize
@@ -155,11 +149,11 @@ Item {
     // Get modified data from input fields.
     function modifiedData() {
         var data = {}
-        for (var i=0; i<tableModel.columnCount(); ++i) {
-            if (tableModel.headerData(i, "editable") !== true) {
+        for (var i=0; i<tableViewModel.columnCount(); ++i) {
+            if (tableViewModel.headerData(i, "editable") !== true) {
                 continue
             }
-            var modelKey = tableModel.headerData(i, "roleName")
+            var modelKey = tableViewModel.headerData(i, "roleName")
             var value = textFieldRepeater.itemAt(i).text
             data[modelKey] = value
         }
@@ -171,8 +165,8 @@ Item {
     function generatePassword() {
         var password = modifyController.generatePassword(modifiedData())
         var index = 0
-        for ( ; index<tableModel.columnCount(); ++index) {
-            var role = tableModel.headerData(index, "roleName")
+        for ( ; index<tableViewModel.columnCount(); ++index) {
+            var role = tableViewModel.headerData(index, "roleName")
             if (role === "password") {
                 break
             }

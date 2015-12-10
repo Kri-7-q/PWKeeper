@@ -9,63 +9,59 @@
  * ------------------------------------------------------------------------------------
  */
 
-#include <QAbstractListModel>
-#include <QList>
-#include <QVariantMap>
+#include "abstracttableviewmodel.h"
+//#include <QList>
+//#include <QVariantMap>
 #include <QDebug>
 
-class TableModel : public QAbstractListModel
+
+typedef QHash<int, QVariant> HeaderSection;
+
+
+class TableViewModel : public AbstractTableViewModel
 {
     Q_OBJECT
-    Q_ENUMS(ModelRowState)
     Q_PROPERTY(bool isModified READ isModified WRITE setIsModified NOTIFY isModifiedChanged)
 
 public:
-    explicit TableModel(QObject *parent = 0);
+    explicit TableViewModel(QObject *parent = 0);
 
-    enum Role { StateRole = Qt::UserRole+50 };
-    enum ModelRowState { Origin, Modified, Deleted, New };
-
-    void setHeaderContent(const QList<QVariantMap>& headerContent);
+    bool isModified() const;
+    void setIsModified(bool isModified);
 
 signals:
     void isModifiedChanged();
     void dataStyleChanged();
-    void headerContentChanged();
 
 public slots:
-    TableModel::ModelRowState modelRowState(const int row) const;
-    QString modelRoleName(int role) const;
-    QVariant data(const int row, const QString &role) const;
-    int columnCount() const;
-    QVariant headerData(const int section, const QString& role) const;
 
 public:
     // QAbstractItemModel interface
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &index, int role) const;
-    QVariant data(const QModelIndex &index, const QString &key) const;
+    QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+    bool setHeaderData(int section, Qt::Orientation orientation, const QVariant &value, int role);
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::UserRole);
     bool setData(const QModelIndex &index, const QVariant &value, const QString &key);
-    void resetContent(const QList<QVariantMap> *newContent = NULL);
     QHash<int,QByteArray> roleNames() const;
     bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
     bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex());
 
-    // Concret class members
-    QVariantMap getAccountObject(const int row) const;
-    bool isModified() const;
-    void setIsModified(bool isModified);
-    int appendEmptyRow(const QVariantMap& standardData = QVariantMap());
+    // Concret implementations
+    void resetContent(const QList<QVariantMap> *newContent = NULL);
+    void resetModelRoles();
+    QString modelRoleName(const int role) const;
 
 private:
     QList<QVariantMap> m_rowList;
-    QList<QVariantMap> m_headerList;
+    QList<HeaderSection> m_headerList;
     QHash<int, QByteArray> m_modelRoles;
     bool m_isModified;
 
     // Methods
-    QHash<int, QByteArray> getModelRoles();
+    QHash<int, QByteArray> getModelRoles() const;
+    void growHeaderTo(const int section);
 };
 
 #endif // TABLEMODEL_H

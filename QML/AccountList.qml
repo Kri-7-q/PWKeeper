@@ -7,7 +7,7 @@ Item {
 
     ListViewController {
         id: listViewController
-        model: tableModel
+        model: tableViewModel
     }
 
     property alias currentRow: tableView.currentRow
@@ -26,7 +26,7 @@ Item {
     TableView {
         id: tableView
         width: parent.width
-        model: tableModel
+        model: tableViewModel
         anchors {
             bottom: controlBar.top
             top: searchBar.bottom
@@ -38,7 +38,8 @@ Item {
         rowDelegate: TableViewRow { height: 20 }
 
         Keys.onReturnPressed: controler.copyPasswordToClipboard(currentRow)
-        Component.onCompleted: tableModel.headerContentChanged.connect(createColumns())
+        // TableModel emits a signal when header data has changed.
+        Component.onCompleted: listViewController.modelContentAvailable.connect(createColumns)
     }
 
     // ---------------------------------------------------
@@ -67,7 +68,7 @@ Item {
                 style: PushButtonStyle {}
                 visible: viewController.currentView === ViewController.AccountList
                 onClicked: {
-                    addDialog.model = tableModel.columnCount()
+                    addDialog.model = tableViewModel.columnCount()
                     viewController.currentView = ViewController.NewAccount
                 }
             }
@@ -104,13 +105,13 @@ Item {
                 height: 30
                 text: qsTr("Undo")
                 style: PushButtonStyle {}
-                visible: accountList.currentRow >= 0 && (tableModel.modelRowState(accountList.currentRow) !== TableModel.Origin)
+                visible: accountList.currentRow >= 0 && (listViewController.modelRowState(accountList.currentRow) !== TableViewModel.Origin)
             }
             Button {
                 height: 30
                 text: qsTr("Save")
                 style: PushButtonStyle {}
-                visible: tableModel.isModified
+                visible: tableViewModel.isModified
                 onClicked: listViewController.persistModelModifications()
             }
         } // END - Row (controlBarButtonRow)
@@ -121,18 +122,15 @@ Item {
     // It gets roleName and header name from TableModel header data.
     // Importent: This function do not remove any previous columns from TableView.
     function createColumns() {
-        var count = tableModel.columnCount()
-        for (var column=0; column<count; ++column) {
-            if (tableModel.headerData(column, "showColumn")) {
-                var role = tableModel.headerData(column, "roleName")
-                var title = tableModel.headerData(column, "headerName")
-                var columnObj = tableView.addColumn(comp)
-                columnObj.role = role
-                columnObj.title = title
-            }
+        var visibleColumns = listViewController.getVisibleColumns();
+        for (var column in visibleColumns) {
+            var columnObj = tableView.addColumn(comp)
+            columnObj.role = column.roleName
+            columnObj.title = column.headerName
         }
     }
 
+    // Component with a TableViewColumn class to get instances of it.
     Component {
         id: comp
         TableViewColumn {}

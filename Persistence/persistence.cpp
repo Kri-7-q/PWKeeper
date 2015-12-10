@@ -30,111 +30,117 @@ bool Persistence::isOpen() const
     return m_isOpen;
 }
 
-/**
- * Virtual publc
+/*! Virtual publc
+ *
  * Methode should provied header data for the TableModel and TableView.
- * There are some values for each column to provide.
+ * There are some values for each column to provide. Each column needs
+ * a QVariantMap with meta data to the columns content.
  * One column MUST have:
  * -----------------------
- * headerName           The name of the value in the column.
- * roleName             The role name which is taken in GUI to get data from the model.
- *                      Must also used by the QVariantMap which contains Account object.
- *                      For instance:
- *                      roleName: id        value: 12
- *                      roleName: provider  value: Amazon
- * roleId               An int value starting with Qt::UserRole enum. (Model role)
- * placeHolder          A string which is used as placeholder in input fields.
- * editable             True if a value should be editable by the user. Otherwise false.
- * standardValue        A value to fill in the input field as standard value or nothing 'QVariant(type)'.
- * dataType             The data type which should the value have. One of QVariant types.
- * showColumn           True if this column should be shown in TableView.
- * @return
+ * - headerName
+ *      The name of the value in the column.
+ * - roleName
+ *      The role name which is taken in GUI to get data from the model.
+ *      Must also used by the QVariantMap which contains Account object.
+ *      For instance:
+ *      roleName: id        value: 12
+ *      roleName: provider  value: Amazon
+ * - roleId
+ *      An int value starting with Qt::UserRole enum. (Model role)
+ * - placeHolder
+ *      A string which is used as placeholder in input fields.
+ * - editable
+ *      True if a value should be editable by the user. Otherwise false.
+ * - standardValue
+ *      A value to fill in the input field as standard value or nothing 'QVariant(type)'.
+ * - dataType
+ *      The data type which should the value have. One of QVariant types.
+ * - showColumn
+ *      True if this column should be shown in TableView.
+ * @return  A list with QVariantMap objects containing meta data for the TableView.
  */
-QList<QVariantMap> Persistence::getModelHeader() const
+bool Persistence::setModelHeader(QAbstractListModel *pModel) const
 {
-    QList<QVariantMap> modelHeader;
-    QVariantMap columnHeader;
-    columnHeader.insert(QString("headerName"), QString("Id"));
-    columnHeader.insert(QString("roleName"), QString("id"));
-    columnHeader.insert(QString("roleId"), PrimaryKeyRole);
-    columnHeader.insert(QString("placeHolder"), QString("Primary Key"));
-    columnHeader.insert(QString("editable"), QVariant(false));
-    columnHeader.insert(QString("standardValue"), QVariant(0));
-    columnHeader.insert(QString("dataType"), QVariant::Int);
-    columnHeader.insert(QString("showColumn"), QVariant(false));
-    modelHeader << columnHeader;
-    columnHeader.insert(QString("headerName"), QString("Provider"));
-    columnHeader.insert(QString("roleName"), QString("provider"));
-    columnHeader.insert(QString("roleId"), ProviderRole);
-    columnHeader.insert(QString("placeHolder"), QString("Amazon"));
-    columnHeader.insert(QString("editable"), QVariant(true));
-    columnHeader.insert(QString("standardValue"), QVariant(QVariant::String));
-    columnHeader.insert(QString("dataType"), QVariant::String);
-    columnHeader.insert(QString("showColumn"), QVariant(true));
-    modelHeader << columnHeader;
-    columnHeader.insert(QString("headerName"), QString("Benutzername"));
-    columnHeader.insert(QString("roleName"), QString("username"));
-    columnHeader.insert(QString("roleId"), UsernameRole);
-    columnHeader.insert(QString("placeHolder"), QString("Horst Krampf"));
-    columnHeader.insert(QString("editable"), QVariant(true));
-    columnHeader.insert(QString("standardValue"), QVariant(QVariant::String));
-    columnHeader.insert(QString("dataType"), QVariant::String);
-    columnHeader.insert(QString("showColumn"), QVariant(true));
-    modelHeader << columnHeader;
-    columnHeader.insert(QString("headerName"), QString("Passwort"));
-    columnHeader.insert(QString("roleName"), QString("password"));
-    columnHeader.insert(QString("roleId"), PasswordRole);
-    columnHeader.insert(QString("placeHolder"), QString("Passwort"));
-    columnHeader.insert(QString("editable"), QVariant(true));
-    columnHeader.insert(QString("standardValue"), QVariant(QVariant::String));
-    columnHeader.insert(QString("dataType"), QVariant::String);
-    columnHeader.insert(QString("showColumn"), QVariant(false));
-    modelHeader << columnHeader;
-    columnHeader.insert(QString("headerName"), QString("Passwortlänge"));
-    columnHeader.insert(QString("roleName"), QString("passwordlength"));
-    columnHeader.insert(QString("roleId"), PasswordLengthRole);
-    columnHeader.insert(QString("placeHolder"), QString("Länge des Passworts"));
-    columnHeader.insert(QString("editable"), QVariant(true));
-    columnHeader.insert(QString("standardValue"), QVariant(12));
-    columnHeader.insert(QString("dataType"), QVariant::Int);
-    columnHeader.insert(QString("showColumn"), QVariant(false));
-    modelHeader << columnHeader;
-    columnHeader.insert(QString("headerName"), QString("Sicherheitsfrage"));
-    columnHeader.insert(QString("roleName"), QString("question"));
-    columnHeader.insert(QString("roleId"), QuestionRole);
-    columnHeader.insert(QString("placeHolder"), QString("Deine lieblings Farbe?"));
-    columnHeader.insert(QString("editable"), QVariant(true));
-    columnHeader.insert(QString("standardValue"), QVariant(QVariant::String));
-    columnHeader.insert(QString("dataType"), QVariant::String);
-    columnHeader.insert(QString("showColumn"), QVariant(false));
-    modelHeader << columnHeader;
-    columnHeader.insert(QString("headerName"), QString("Antwort"));
-    columnHeader.insert(QString("roleName"), QString("answer"));
-    columnHeader.insert(QString("roleId"), AnswerRole);
-    columnHeader.insert(QString("placeHolder"), QString("Grün"));
-    columnHeader.insert(QString("editable"), QVariant(true));
-    columnHeader.insert(QString("standardValue"), QVariant(QVariant::String));
-    columnHeader.insert(QString("dataType"), QVariant::String);
-    columnHeader.insert(QString("showColumn"), QVariant(false));
-    modelHeader << columnHeader;
-    columnHeader.insert(QString("headerName"), QString("Zeichensatz"));
-    columnHeader.insert(QString("roleName"), QString("definedcharacter"));
-    columnHeader.insert(QString("roleId"), DefinedCharacterRole);
-    columnHeader.insert(QString("placeHolder"), QString("Zeichen für Passwort"));
-    columnHeader.insert(QString("editable"), QVariant(true));
-    columnHeader.insert(QString("standardValue"), QString("*[a-Z]*[0-9]"));
-    columnHeader.insert(QString("dataType"), QVariant::String);
-    columnHeader.insert(QString("showColumn"), QVariant(false));
-    modelHeader << columnHeader;
-    columnHeader.insert(QString("headerName"), QString("Letzte Änderung"));
-    columnHeader.insert(QString("roleName"), QString("lastmodify"));
-    columnHeader.insert(QString("roleId"), LastModifyRole);
-    columnHeader.insert(QString("placeHolder"), QString("Datum"));
-    columnHeader.insert(QString("editable"), QVariant(false));
-    columnHeader.insert(QString("standardValue"), QVariant(QVariant::DateTime));
-    columnHeader.insert(QString("dataType"), QVariant::DateTime);
-    columnHeader.insert(QString("showColumn"), QVariant(false));
-    modelHeader << columnHeader;
+    pModel->setHeaderData(0, Qt::Horizontal, QString("id"), HeaderNameRole);
+    pModel->setHeaderData(0, Qt::Horizontal, QString("id"), DataRoleNameRole);
+    pModel->setHeaderData(0, Qt::Horizontal, QVariant(PrimaryKeyRole), DataRoleIdRole);
+    pModel->setHeaderData(0, Qt::Horizontal, QString("Primary Key"), PlaceHolderRole);
+    pModel->setHeaderData(0, Qt::Horizontal, QVariant(false), EditableRole);
+    pModel->setHeaderData(0, Qt::Horizontal, QVariant(0), StandardValueRole);
+    pModel->setHeaderData(0, Qt::Horizontal, QVariant(QVariant::Int), DataTypeRole);
+    pModel->setHeaderData(0, Qt::Horizontal, QVariant(false), ColumnVisibleRole);
 
-    return modelHeader;
+    pModel->setHeaderData(1, Qt::Horizontal, QString("Provider"), HeaderNameRole);
+    pModel->setHeaderData(1, Qt::Horizontal, QString("provider"), DataRoleNameRole);
+    pModel->setHeaderData(1, Qt::Horizontal, QVariant(ProviderRole), DataRoleIdRole);
+    pModel->setHeaderData(1, Qt::Horizontal, QString("Amazon"), PlaceHolderRole);
+    pModel->setHeaderData(1, Qt::Horizontal, QVariant(true), EditableRole);
+    pModel->setHeaderData(1, Qt::Horizontal, QVariant(QVariant::String), StandardValueRole);
+    pModel->setHeaderData(1, Qt::Horizontal, QVariant(QVariant::String), DataTypeRole);
+    pModel->setHeaderData(1, Qt::Horizontal, QVariant(true), ColumnVisibleRole);
+
+    pModel->setHeaderData(2, Qt::Horizontal, QString("Benutzername"), HeaderNameRole);
+    pModel->setHeaderData(2, Qt::Horizontal, QString("username"), DataRoleNameRole);
+    pModel->setHeaderData(2, Qt::Horizontal, QVariant(UsernameRole), DataRoleIdRole);
+    pModel->setHeaderData(2, Qt::Horizontal, QString("Horst Krampf"), PlaceHolderRole);
+    pModel->setHeaderData(2, Qt::Horizontal, QVariant(true), EditableRole);
+    pModel->setHeaderData(2, Qt::Horizontal, QVariant(QVariant::String), StandardValueRole);
+    pModel->setHeaderData(2, Qt::Horizontal, QVariant(QVariant::String), DataTypeRole);
+    pModel->setHeaderData(2, Qt::Horizontal, QVariant(true), ColumnVisibleRole);
+
+    pModel->setHeaderData(3, Qt::Horizontal, QString("Passwort"), HeaderNameRole);
+    pModel->setHeaderData(3, Qt::Horizontal, QString("password"), DataRoleNameRole);
+    pModel->setHeaderData(3, Qt::Horizontal, QVariant(PasswordRole), DataRoleIdRole);
+    pModel->setHeaderData(3, Qt::Horizontal, QString("Passwort"), PlaceHolderRole);
+    pModel->setHeaderData(3, Qt::Horizontal, QVariant(true), EditableRole);
+    pModel->setHeaderData(3, Qt::Horizontal, QVariant(QVariant::String), StandardValueRole);
+    pModel->setHeaderData(3, Qt::Horizontal, QVariant(QVariant::String), DataTypeRole);
+    pModel->setHeaderData(3, Qt::Horizontal, QVariant(false), ColumnVisibleRole);
+
+    pModel->setHeaderData(4, Qt::Horizontal, QString("Passwortlänge"), HeaderNameRole);
+    pModel->setHeaderData(4, Qt::Horizontal, QString("passwordlength"), DataRoleNameRole);
+    pModel->setHeaderData(4, Qt::Horizontal, QVariant(PasswordLengthRole), DataRoleIdRole);
+    pModel->setHeaderData(4, Qt::Horizontal, QString("Länge des Passworts"), PlaceHolderRole);
+    pModel->setHeaderData(4, Qt::Horizontal, QVariant(true), EditableRole);
+    pModel->setHeaderData(4, Qt::Horizontal, QVariant(12), StandardValueRole);
+    pModel->setHeaderData(4, Qt::Horizontal, QVariant(QVariant::Int), DataTypeRole);
+    pModel->setHeaderData(4, Qt::Horizontal, QVariant(false), ColumnVisibleRole);
+
+    pModel->setHeaderData(5, Qt::Horizontal, QString("Sicherheitsfrage"), HeaderNameRole);
+    pModel->setHeaderData(5, Qt::Horizontal, QString("question"), DataRoleNameRole);
+    pModel->setHeaderData(5, Qt::Horizontal, QVariant(QuestionRole), DataRoleIdRole);
+    pModel->setHeaderData(5, Qt::Horizontal, QString("Deine lieblings Farbe?"), PlaceHolderRole);
+    pModel->setHeaderData(5, Qt::Horizontal, QVariant(true), EditableRole);
+    pModel->setHeaderData(5, Qt::Horizontal, QVariant(QVariant::String), StandardValueRole);
+    pModel->setHeaderData(5, Qt::Horizontal, QVariant(QVariant::String), DataTypeRole);
+    pModel->setHeaderData(5, Qt::Horizontal, QVariant(false), ColumnVisibleRole);
+
+    pModel->setHeaderData(6, Qt::Horizontal, QString("Antwort"), HeaderNameRole);
+    pModel->setHeaderData(6, Qt::Horizontal, QString("answer"), DataRoleNameRole);
+    pModel->setHeaderData(6, Qt::Horizontal, QVariant(AnswerRole), DataRoleIdRole);
+    pModel->setHeaderData(6, Qt::Horizontal, QString("Grün"), PlaceHolderRole);
+    pModel->setHeaderData(6, Qt::Horizontal, QVariant(true), EditableRole);
+    pModel->setHeaderData(6, Qt::Horizontal, QVariant(QVariant::String), StandardValueRole);
+    pModel->setHeaderData(6, Qt::Horizontal, QVariant(QVariant::String), DataTypeRole);
+    pModel->setHeaderData(6, Qt::Horizontal, QVariant(false), ColumnVisibleRole);
+
+    pModel->setHeaderData(7, Qt::Horizontal, QString("Zeichensatz"), HeaderNameRole);
+    pModel->setHeaderData(7, Qt::Horizontal, QString("definedcharacter"), DataRoleNameRole);
+    pModel->setHeaderData(7, Qt::Horizontal, QVariant(DefinedCharacterRole), DataRoleIdRole);
+    pModel->setHeaderData(7, Qt::Horizontal, QString("Zeichen für Passwort"), PlaceHolderRole);
+    pModel->setHeaderData(7, Qt::Horizontal, QVariant(true), EditableRole);
+    pModel->setHeaderData(7, Qt::Horizontal, QVariant(QString("*[a.Z]*[0-9]")), StandardValueRole);
+    pModel->setHeaderData(7, Qt::Horizontal, QVariant(QVariant::String), DataTypeRole);
+    pModel->setHeaderData(7, Qt::Horizontal, QVariant(false), ColumnVisibleRole);
+
+    pModel->setHeaderData(8, Qt::Horizontal, QString("Letzte Änderung"), HeaderNameRole);
+    pModel->setHeaderData(8, Qt::Horizontal, QString("lastmodify"), DataRoleNameRole);
+    pModel->setHeaderData(8, Qt::Horizontal, QVariant(LastModifyRole), DataRoleIdRole);
+    pModel->setHeaderData(8, Qt::Horizontal, QString("Datum"), PlaceHolderRole);
+    pModel->setHeaderData(8, Qt::Horizontal, QVariant(false), EditableRole);
+    pModel->setHeaderData(8, Qt::Horizontal, QVariant(QVariant::DateTime), StandardValueRole);
+    pModel->setHeaderData(8, Qt::Horizontal, QVariant(QVariant::DateTime), DataTypeRole);
+    pModel->setHeaderData(8, Qt::Horizontal, QVariant(false), ColumnVisibleRole);
+
+    return true;
 }

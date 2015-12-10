@@ -12,19 +12,15 @@
  * ------------------------------------------------------------------------------
  */
 
-#include "tablemodel.h"
+#include "modelconstants.h"
+#include <QVariantMap>
+#include <QAbstractListModel>
 
 class Persistence
 {
 public:
     Persistence();
     virtual ~Persistence();
-
-    // Below ModelRoles should be used in 'getModelHeader()'
-    // PrimaryKey, Provider, Username, Password, PasswordLength, DefinedCharacter MUST be present.
-    // The others are optional.
-    enum ModelRole { PrimaryKeyRole = Qt::UserRole, ProviderRole, UsernameRole, PasswordRole, PasswordLengthRole,
-                     DefinedCharacterRole, QuestionRole, AnswerRole, LastModifyRole};
 
     // Open and close persistence
     virtual bool open() const = 0;
@@ -44,7 +40,7 @@ public:
 
     // Model and Application compability
     // See description of standard implementation.
-    virtual QList<QVariantMap> getModelHeader() const;
+    virtual bool setModelHeader(QAbstractListModel* pModel) const;
 
 protected:
     void setOpen(const bool isOpen)                 { m_isOpen = isOpen; }

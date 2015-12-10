@@ -45,7 +45,7 @@ Rectangle {
     Text {
         id: itemText
         text: styleData.value
-        color: (tableViewItemPrivate.modelRowState === TableModel.Origin && styleData.selected) ? highlightTextColor : tableViewItemPrivate.currentTextColor
+        color: tableViewItemPrivate.textColor()
         elide: styleData.elideMode
         horizontalAlignment: styleData.textAlignment | Text.AlignVCenter
         anchors.verticalCenter: parent.verticalCenter
@@ -64,7 +64,6 @@ Rectangle {
     QtObject {
         id: tableViewItemPrivate
         property int modelRowState: TableModel.Origin
-        property color currentTextColor: normalTextColor
         property bool selected: styleData.selected
 
         /* Signal for data changed in model.
@@ -77,37 +76,62 @@ Rectangle {
     */
         onSelectedChanged: {
             if (selected === true) {
-                tableModel.dataStyleChanged.connect(updateStyle)
+                tableViewModel.dataStyleChanged.connect(updateStyle)
             } else {
-                tableModel.dataStyleChanged.disconnect(updateStyle)
+                tableViewModel.dataStyleChanged.disconnect(updateStyle)
             }
         }
+
         function updateStyle() {
-            modelRowState = tableModel.modelRowState(styleData.row);
+            modelRowState = listViewController.modelRowState(styleData.row)
             switch (modelRowState) {
             case TableModel.Origin:
                 itemText.font.strikeout = false
                 itemText.font.italic = false
-                currentTextColor = normalTextColor
                 break
             case TableModel.Modified:
                 itemText.font.strikeout = false
                 itemText.font.italic = true
-                currentTextColor = modifiedTextColor
                 break
             case TableModel.Deleted:
                 itemText.font.strikeout = true
                 itemText.font.italic = false
-                currentTextColor = deletedTextColor
                 break
             case TableModel.New:
                 itemText.font.strikeout = false
                 itemText.font.italic = false
-                currentTextColor = newItemTextColor
                 break
             default:
                 break
             }
+        }
+
+        // Function to determine current text color.
+        function textColor() {
+            var color
+            switch (modelRowState) {
+            case TableModel.Origin:
+                if (styleData.selected) {
+                    color = highlightTextColor
+                } else {
+                    color = normalTextColor
+                }
+                break
+            case TableModel.New:
+                color = newItemTextColor
+                break
+            case TableModel.Modified:
+                color = modifiedTextColor
+                break
+            case TableModel.Deleted:
+                color = deletedTextColor
+                break
+            default:
+                color = normalTextColor
+                break
+            }
+
+            return color
         }
     } // END - QtObject (Private)
 }

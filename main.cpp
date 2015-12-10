@@ -1,5 +1,6 @@
 #include <QGuiApplication>
 #include <QtQml>
+#include "tableviewmodel.h"
 #include "listviewcontroler.h"
 #include "viewcontroler.h"
 #include "modifycontroler.h"
@@ -9,7 +10,7 @@ int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
-    qmlRegisterType<TableModel>("Models", 1, 0, "TableModel");
+    qmlRegisterType<TableViewModel>("Models", 1, 0, "TableViewModel");
     qmlRegisterType<ListViewControler>("Controllers", 1, 0, "ListViewController");
     qmlRegisterType<ViewControler>("Controllers", 1, 0, "ViewController");
     qmlRegisterType<ModifyControler>("Controllers", 1, 0, "ModifyController");

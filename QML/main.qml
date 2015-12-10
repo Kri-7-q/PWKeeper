@@ -10,8 +10,8 @@ ApplicationWindow {
     height: 960
     title: qsTr("Password Kepper")
 
-    TableModel {
-        id: tableModel
+    TableViewModel {
+        id: tableViewModel
     }
 
     ViewController {
