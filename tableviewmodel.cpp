@@ -2,8 +2,7 @@
 
 // Constructor
 TableViewModel::TableViewModel(QObject *parent) :
-    AbstractTableViewModel(parent),
-    m_isModified(false)
+    AbstractTableViewModel(parent)
 {
 }
 
@@ -57,6 +56,7 @@ bool TableViewModel::setHeaderData(int section, Qt::Orientation orientation, con
     }
     HeaderSection& sectionObj = m_headerList[section];
     sectionObj.insert(role, value);
+    emit headerDataChanged(Qt::Horizontal, section, section);
 
     return true;
 }
@@ -85,10 +85,6 @@ bool TableViewModel::setData(const QModelIndex &index, const QVariant &value, co
     QVariantMap &entry = m_rowList[index.row()];
     entry.insert(key, value);
     emit dataChanged(index, index);
-    setIsModified(true);
-    if (key == modelRoleName(StateRole)) {
-        emit dataStyleChanged();
-    }
 
     return true;
 }
@@ -102,7 +98,6 @@ void TableViewModel::resetContent(const QList<QVariantMap> *newContent)
         m_rowList.append(*newContent);
     }
     endResetModel();
-    setIsModified(false);
 }
 
 /**
@@ -117,21 +112,6 @@ void TableViewModel::resetModelRoles()
 QHash<int, QByteArray> TableViewModel::roleNames() const
 {
     return m_modelRoles;
-}
-
-// Getter
-bool TableViewModel::isModified() const
-{
-    return m_isModified;
-}
-
-// Setter
-void TableViewModel::setIsModified(bool isModified)
-{
-    if (m_isModified != isModified) {
-        m_isModified = isModified;
-        emit isModifiedChanged();
-    }
 }
 
 // Overwrite

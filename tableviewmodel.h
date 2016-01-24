@@ -10,8 +10,6 @@
  */
 
 #include "abstracttableviewmodel.h"
-//#include <QList>
-//#include <QVariantMap>
 #include <QDebug>
 
 
@@ -21,17 +19,11 @@ typedef QHash<int, QVariant> HeaderSection;
 class TableViewModel : public AbstractTableViewModel
 {
     Q_OBJECT
-    Q_PROPERTY(bool isModified READ isModified WRITE setIsModified NOTIFY isModifiedChanged)
 
 public:
     explicit TableViewModel(QObject *parent = 0);
 
-    bool isModified() const;
-    void setIsModified(bool isModified);
-
 signals:
-    void isModifiedChanged();
-    void dataStyleChanged();
 
 public slots:
 
@@ -57,7 +49,6 @@ private:
     QList<QVariantMap> m_rowList;
     QList<HeaderSection> m_headerList;
     QHash<int, QByteArray> m_modelRoles;
-    bool m_isModified;
 
     // Methods
     QHash<int, QByteArray> getModelRoles() const;

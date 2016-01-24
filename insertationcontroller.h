@@ -27,6 +27,10 @@ public slots:
     void setModifiedData(const int row, const QVariantMap modifiedData);
     void insertNewData(const QVariantMap newData);
     QString generatePassword(const QVariantMap account);
+    QVariant modelHeaderPlaceHolder(const int section) const;
+    QVariant modelHeaderRoleName(const int section) const;
+    QVariant isColumnEditable(const int section) const;
+    int modelsPasswordSection() const;
 
 protected:
     bool insertModifiedData(const QModelIndex &index, const QVariantMap &modifiedData) const;

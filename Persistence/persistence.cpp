@@ -129,7 +129,7 @@ bool Persistence::setModelHeader(QAbstractListModel *pModel) const
     pModel->setHeaderData(7, Qt::Horizontal, QVariant(DefinedCharacterRole), DataRoleIdRole);
     pModel->setHeaderData(7, Qt::Horizontal, QString("Zeichen für Passwort"), PlaceHolderRole);
     pModel->setHeaderData(7, Qt::Horizontal, QVariant(true), EditableRole);
-    pModel->setHeaderData(7, Qt::Horizontal, QVariant(QString("*[a.Z]*[0-9]")), StandardValueRole);
+    pModel->setHeaderData(7, Qt::Horizontal, QVariant(QString("*[a-Z]*[0-9]")), StandardValueRole);
     pModel->setHeaderData(7, Qt::Horizontal, QVariant(QVariant::String), DataTypeRole);
     pModel->setHeaderData(7, Qt::Horizontal, QVariant(false), ColumnVisibleRole);
 

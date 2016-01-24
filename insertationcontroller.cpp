@@ -24,9 +24,9 @@ void InsertationController::setModifiedData(const int row, const QVariantMap mod
     QModelIndex index = m_pModel->index(row);
     bool hasModifications = insertModifiedData(index, modifiedData);
     // Mark model row as modified if data was realy modified.
-    ModelRowState state = (ModelRowState)m_pModel->data(index, StateRole).toInt();
-    if (hasModifications && state != New) {
-        m_pModel->setData(index, QVariant(Modified), StateRole);
+    AbstractTableViewModel::DataState state = m_pModel->modelRowState(row);
+    if (hasModifications && state != AbstractTableViewModel::New) {
+        m_pModel->setModelRowState(row, AbstractTableViewModel::Modified);
     }
 }
 
@@ -42,7 +42,7 @@ void InsertationController::insertNewData(const QVariantMap newData)
     m_pModel->insertRow(row);
     QModelIndex index = m_pModel->index(row);
     insertModifiedData(index, newData);
-    m_pModel->setData(index, QVariant(New), StateRole);
+    m_pModel->setModelRowState(row, AbstractTableViewModel::New);
 }
 
 /**
@@ -65,6 +65,53 @@ QString InsertationController::generatePassword(const QVariantMap account)
     }
 
     return password;
+}
+
+/**
+ * Get the placeholder string from model header.
+ * @param section       The models column.
+ * @return              The placeholder text as a QVariant.
+ */
+QVariant InsertationController::modelHeaderPlaceHolder(const int section) const
+{
+    return m_pModel->headerData(section, Qt::Horizontal, PlaceHolderRole);
+}
+
+/**
+ * Get the role name for data of a model column.
+ * @param section       The models column.
+ * @return              The role name.
+ */
+QVariant InsertationController::modelHeaderRoleName(const int section) const
+{
+    return m_pModel->headerData(section, Qt::Horizontal, DataRoleNameRole);
+}
+
+/**
+ * Get information about a model column. If data is editable.
+ * @param section       The models column.
+ * @return              True if column data is editable.
+ */
+QVariant InsertationController::isColumnEditable(const int section) const
+{
+    return m_pModel->headerData(section, Qt::Horizontal, EditableRole);
+}
+
+/**
+ * @brief InsertationController::modelsPasswordSection
+ * @return
+ */
+int InsertationController::modelsPasswordSection() const
+{
+    int section = 0;
+    for ( ; section<m_pModel->columnCount(); ++section) {
+        ModelDataRole role = (ModelDataRole)m_pModel->headerData(section, Qt::Horizontal, DataRoleIdRole).toInt();
+        if (role == PasswordRole) {
+            break;
+        }
+    }
+
+    return section;
 }
 
 /**

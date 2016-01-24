@@ -51,7 +51,7 @@ Item {
                 // Value description field
                 Text {
                     width: root.descriptionWidth
-                    text: tableViewModel.headerData(index, "headerName")
+                    text: modifyController.modelHeaderText(index)
                     font {
                         family: root.fontFamily
                         pixelSize: root.fontSize
@@ -63,8 +63,8 @@ Item {
                     id: entryTextField
                     width: root.width - entryRow.spacing - root.descriptionWidth - entryColumn.anchors.margins * 2
                     text: modifyController.modelData(index, modelRow)
-                    placeholderText: tableViewModel.headerData(index, "placeHolder")
-                    visible: tableViewModel.headerData(index, "editable")
+                    placeholderText: modifyController.modelHeaderPlaceHolder(index);
+                    visible: modifyController.isColumnEditable(index);
                     font {
                         family: root.fontFamily
                         pixelSize: root.fontSize
@@ -75,7 +75,7 @@ Item {
                 Text {
                     id: entryText
                     text: modifyController.modelData(index, modelRow)
-                    visible: !tableViewModel.headerData(index, "editable")
+                    visible: !modifyController.isColumnEditable(index)
                     font {
                         family: root.fontFamily
                         pixelSize: root.fontSize
@@ -150,10 +150,10 @@ Item {
     function modifiedData() {
         var data = {}
         for (var i=0; i<tableViewModel.columnCount(); ++i) {
-            if (tableViewModel.headerData(i, "editable") !== true) {
+            if (modifyController.isColumnEditable(i) !== true) {
                 continue
             }
-            var modelKey = tableViewModel.headerData(i, "roleName")
+            var modelKey = modifyController.modelHeaderRoleName(i)
             var value = textFieldRepeater.itemAt(i).text
             data[modelKey] = value
         }
@@ -164,13 +164,7 @@ Item {
     // Generate a new password and set it into text field.
     function generatePassword() {
         var password = modifyController.generatePassword(modifiedData())
-        var index = 0
-        for ( ; index<tableViewModel.columnCount(); ++index) {
-            var role = tableViewModel.headerData(index, "roleName")
-            if (role === "password") {
-                break
-            }
-        }
+        var index = modifyController.modelsPasswordSection()
         textFieldRepeater.itemAt(index).text = password
     }
 }

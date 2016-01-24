@@ -19,7 +19,7 @@ CharacterDefinition::CharacterDefinition()
 CharacterDefinition::CharacterDefinition(unsigned short amount, QChar from, QChar to) :
     m_amount(amount)
 {
-    if (from.isLower() && to.isUpper() || from.isUpper() && to.isLower()) {
+    if ((from.isLower() && to.isUpper()) || (from.isUpper() && to.isLower())) {
         buildRange(from.toLower(), to.toLower());
         buildRange(from.toUpper(), to.toUpper());
     } else {

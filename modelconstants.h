@@ -36,12 +36,5 @@ enum ModelDataRole { PrimaryKeyRole = Qt::UserRole, ProviderRole, UsernameRole, 
 enum ModelHeaderRole { HeaderNameRole = Qt::UserRole + 30, DataRoleNameRole, DataRoleIdRole, PlaceHolderRole,
                        EditableRole, StandardValueRole, DataTypeRole, ColumnVisibleRole };
 
-/*
- * Data in model can be modified therefor it needs some marker
- * to mark modified content in the model.
- * Data can be: New, Modified, Deleted or Origin
- */
-enum ModelRowState { New, Origin, Modified, Deleted };
-
 #endif // MODELCONSTANTS
 

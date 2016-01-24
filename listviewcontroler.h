@@ -30,12 +30,14 @@ public:
 
 signals:
     void modelContentAvailable();
+    void selectTableViewRow(const int row);
 
 public slots:
-    void deleteModelRow(const int row) const;
+    void deleteModelRow(const int row);
     void persistModelModifications();
-    QVariant modelRowState(const int row) const;
-    QList<QVariantMap> getVisibleColumns() const;
+    int columnCount() const;
+    QVariant isColumnVisible(const int column) const;
+    QVariant roleNameOfColumn(const int column) const;
 
 private slots:
     void setModelContent();
@@ -46,7 +48,7 @@ private:
     // Private Methods
     QVariantMap accountWithEditableRoles(const int row) const;
     QVariantMap accountObjectFromModel(const int row) const;
-    void removeAccountObject(const int row, const QVariantMap& account);
+    void replaceAccountObject(const int row, const QVariantMap& account);
 };
 
 #endif // LISTVIEWCONTROLER_H

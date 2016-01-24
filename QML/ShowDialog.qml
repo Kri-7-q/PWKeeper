@@ -48,7 +48,7 @@ Item {
                 // Values description field
                 Text {
                     width: root.descriptionWidth
-                    text: tableViewModel.headerData(index, "headerName")
+                    text: showController.modelHeaderText(index)
                     font {
                         bold: true
                         family: root.fontFamily

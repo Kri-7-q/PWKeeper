@@ -1,5 +1,7 @@
 #include "listviewcontroler.h"
 #include <QDateTime>
+#include <QJsonArray>
+#include <QJsonObject>
 
 ListViewControler::ListViewControler(QObject *parent) :
     Controller(parent)
@@ -22,14 +24,14 @@ ListViewControler::~ListViewControler()
  * If a row has model row state New than the row is deleted immediately.
  * @param row
  */
-void ListViewControler::deleteModelRow(const int row) const
+void ListViewControler::deleteModelRow(const int row)
 {
     QModelIndex index = m_pModel->index(row);
-    ModelRowState state = (ModelRowState)m_pModel->data(index, StateRole).toInt();
-    if (state == New) {
+    AbstractTableViewModel::DataState state = (AbstractTableViewModel::DataState)m_pModel->data(index, StateRole).toInt();
+    if (state == AbstractTableViewModel::New) {
         m_pModel->removeRow(row, QModelIndex());
     } else {
-        m_pModel->setData(index, QVariant(Deleted), StateRole);
+        m_pModel->setModelRowState(row, AbstractTableViewModel::Deleted);
     }
 }
 
@@ -47,9 +49,9 @@ void ListViewControler::persistModelModifications()
     }
     int row = 0, lastRow = m_pModel->rowCount();
     while (row < lastRow) {
-        ModelRowState state = (ModelRowState)modelRowState(row).toInt();
+        AbstractTableViewModel::DataState state = m_pModel->modelRowState(row);
         switch (state) {
-        case New: {
+        case AbstractTableViewModel::New: {
             QVariantMap account = accountWithEditableRoles(row);
             if (! m_pPersistence->persistAccountObject(account)) {
                 qDebug() << "ListViewControler::persistModelModifications() --> persistAccountObject(account)";
@@ -58,12 +60,14 @@ void ListViewControler::persistModelModifications()
                 // Read new Account from datafase.
                 account = m_pPersistence->findAccount(account);
                 // Update model. New Account got an id from database and last modify date.
-                removeAccountObject(row, account);
+                replaceAccountObject(row, account);
+                emit selectTableViewRow(row);
+                m_pModel->setModelRowState(row, AbstractTableViewModel::Origin);
             }
             ++row;
             break;
         }
-        case Deleted: {
+        case AbstractTableViewModel::Deleted: {
             QVariantMap account = accountObjectFromModel(row);
             if (! m_pPersistence->deleteAccountObject(account)) {
                 qDebug() << "ListViewControler::persistModelModifications() --> deleteAccountObject(account)";
@@ -75,11 +79,14 @@ void ListViewControler::persistModelModifications()
             }
             break;
         }
-        case Modified: {
+        case AbstractTableViewModel::Modified: {
             QVariantMap account = accountObjectFromModel(row);
             if (! m_pPersistence->modifyAccountObject(account)) {
                 qDebug() << "ListViewControler::persistModelModifications() --> modifyAccountObject(account)";
                 qDebug() << "Could not modify Account object.";
+            } else {
+                emit selectTableViewRow(row);
+                m_pModel->setModelRowState(row, AbstractTableViewModel::Origin);
             }
             ++row;
             break;
@@ -90,47 +97,38 @@ void ListViewControler::persistModelModifications()
         }
     }
     m_pPersistence->close();
+    emit selectTableViewRow(-1);
 }
 
 /**
- * Get the current state of a model row (Account object).
- * The states are: Origin, New, Modified, Deleted
- * @param row       The row number of Account object.
- * @return          The current state of the object.
+ * Get the number of columns in the model.
+ * @return
  */
-QVariant ListViewControler::modelRowState(const int row) const
+int ListViewControler::columnCount() const
 {
-    QModelIndex index = m_pModel->index(row);
-    QVariant state = m_pModel->data(index, StateRole);
-    if (! state.isValid()) {
-        return QVariant(Origin);
-    }
-
-    return state;
+    return m_pModel->columnCount();
 }
 
 /**
- * Get a list of visible TableView columns.
- * Column objects contain header name and role name to create
- * a TableViewColumn object.
- * @return      A list of visible columns.
+ * Get information about a model column.
+ * Return if a column should be visible in TableView or not.
+ * @param column    The column to query for information.
+ * @return          A QVariant object with a bool value.
  */
-QList<QVariantMap> ListViewControler::getVisibleColumns() const
+QVariant ListViewControler::isColumnVisible(const int column) const
 {
-    QList<QVariantMap> columnList;
-    for (int column=0; column<m_pModel->columnCount(); ++column) {
-        bool visible = m_pModel->headerData(column, Qt::Horizontal, ColumnVisibleRole).toBool();
-        if (visible) {
-            QVariantMap columnObj;
-            QVariant headerName = m_pModel->headerData(column, Qt::Horizontal, HeaderNameRole);
-            QVariant roleName = m_pModel->headerData(column, Qt::Horizontal, DataRoleNameRole);
-            columnObj.insert("headerName", headerName);
-            columnObj.insert("roleName", roleName);
-            columnList << columnObj;
-        }
-    }
+    return m_pModel->headerData(column, Qt::Horizontal, ColumnVisibleRole);
+}
 
-    return columnList;
+/**
+ * Get the role name of a model column. (QVariantMap key)
+ * The role names are part of the model header data.
+ * @param column    The column to query for the role name.
+ * @return          A QVariant with the role name.
+ */
+QVariant ListViewControler::roleNameOfColumn(const int column) const
+{
+    return m_pModel->headerData(column, Qt::Horizontal, DataRoleNameRole);
 }
 
 /**
@@ -155,6 +153,8 @@ void ListViewControler::setModelContent()
  * Reads all editable values of an account from the model.
  * Values are stored in a QVariantMap with model role names
  * (database column names) as keys.
+ * If a value is editable or not can be queried from models
+ * header data.
  * @param index             Model index of the Account object.
  * @return account          A QVariantMap map with the Account object.
  */
@@ -200,11 +200,11 @@ QVariantMap ListViewControler::accountObjectFromModel(const int row) const
 
 /**
  * Public
- * Removes an Account object in the model.
- * @param row           The model row where account should be removed.
- * @param account       The Account object to be inserted instead of another one.
+ * Replaces an Account object in the model.
+ * @param row           The model row where account should be replaced.
+ * @param account       The Account object which should replace the one stored there.
  */
-void ListViewControler::removeAccountObject(const int row, const QVariantMap &account)
+void ListViewControler::replaceAccountObject(const int row, const QVariantMap &account)
 {
     QModelIndex index = m_pModel->index(row);
     for (int column=0; column<m_pModel->columnCount(); ++column) {

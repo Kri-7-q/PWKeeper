@@ -43,3 +43,25 @@ QVariant Controller::modelData(const int section, const int row) const
 
     return m_pModel->data(index, role);
 }
+
+/**
+ * Get the header text value of a model column. This text is
+ * normaly be shown in table view header.
+ * @param column    The column to query for its header text.
+ * @return          A QVariant with the header text.
+ */
+QVariant Controller::modelHeaderText(const int column) const
+{
+    return m_pModel->headerData(column, Qt::Horizontal, HeaderNameRole);
+}
+
+/**
+ * SLOT
+ * Get a standard value to a column of the model header.
+ * @param column        The column to query for if standard value.
+ * @return              The standard value to the column.
+ */
+QVariant Controller::standardText(const int column) const
+{
+    return m_pModel->headerData(column, Qt::Horizontal, StandardValueRole);
+}

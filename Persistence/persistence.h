@@ -5,7 +5,7 @@
  * Class Persistence
  *
  * Its an abstract class with most methods are pure virtual. This is just a
- * interface for a concret persistence class. There are a factory with creates
+ * interface for a concret persistence class. There are a factory which creates
  * a instance of the concret class.
  * To use your own persistence you should subclass this interface and modify
  * the PersistenceFactory.

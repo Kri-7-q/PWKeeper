@@ -27,6 +27,7 @@
 
 import QtQuick 2.0
 import Models 1.0
+import Controllers 1.0
 
 
 Rectangle {
@@ -56,14 +57,13 @@ Rectangle {
             family: "Helvetica"
             pixelSize: 12
             weight: Font.Normal
-        }
+        } 
     }
 
 
     // Private member
     QtObject {
         id: tableViewItemPrivate
-        property int modelRowState: TableModel.Origin
         property bool selected: styleData.selected
 
         /* Signal for data changed in model.
@@ -76,30 +76,33 @@ Rectangle {
     */
         onSelectedChanged: {
             if (selected === true) {
-                tableViewModel.dataStyleChanged.connect(updateStyle)
+                tableViewModel.modelRowStateChanged.connect(updateStyle)
             } else {
-                tableViewModel.dataStyleChanged.disconnect(updateStyle)
+                tableViewModel.modelRowStateChanged.disconnect(updateStyle)
             }
         }
 
-        function updateStyle() {
-            modelRowState = listViewController.modelRowState(styleData.row)
-            switch (modelRowState) {
-            case TableModel.Origin:
+        function updateStyle(state) {
+            switch (state) {
+            case TableViewModel.Origin:
                 itemText.font.strikeout = false
                 itemText.font.italic = false
+                itemText.color = highlightTextColor
                 break
-            case TableModel.Modified:
+            case TableViewModel.Modified:
                 itemText.font.strikeout = false
                 itemText.font.italic = true
+                itemText.color = modifiedTextColor
                 break
-            case TableModel.Deleted:
+            case TableViewModel.Deleted:
                 itemText.font.strikeout = true
                 itemText.font.italic = false
+                itemText.color = deletedTextColor
                 break
-            case TableModel.New:
+            case TableViewModel.New:
                 itemText.font.strikeout = false
                 itemText.font.italic = false
+                itemText.color = newItemTextColor
                 break
             default:
                 break
@@ -109,21 +112,22 @@ Rectangle {
         // Function to determine current text color.
         function textColor() {
             var color
+            var modelRowState = tableViewModel.modelRowState(styleData.row)
             switch (modelRowState) {
-            case TableModel.Origin:
+            case TableViewModel.Origin:
                 if (styleData.selected) {
                     color = highlightTextColor
                 } else {
                     color = normalTextColor
                 }
                 break
-            case TableModel.New:
+            case TableViewModel.New:
                 color = newItemTextColor
                 break
-            case TableModel.Modified:
+            case TableViewModel.Modified:
                 color = modifiedTextColor
                 break
-            case TableModel.Deleted:
+            case TableViewModel.Deleted:
                 color = deletedTextColor
                 break
             default:

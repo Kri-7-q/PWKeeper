@@ -43,8 +43,8 @@ Item {
                 // Value description field
                 Text {
                     width: descriptionWidth
-                    text: tableViewModel.headerData(index, "headerName")
-                    visible: tableViewModel.headerData(index, "editable")
+                    text: addController.modelHeaderText(index)
+                    visible: addController.isColumnEditable(index)
                     font {
                         family: root.fontFamily
                         pixelSize: root.fontSize
@@ -56,14 +56,14 @@ Item {
                 TextField {
                     id: entryTextField
                     width: root.width - entryRow.spacing - root.descriptionWidth - entryColumn.anchors.margins * 2
-                    text: tableViewModel.headerData(index, "standardValue")
-                    placeholderText: tableViewModel.headerData(index, "placeHolder")
+                    text: addController.standardText(index)
+                    placeholderText: addController.modelHeaderPlaceHolder(index)
                     font {
                         family: root.fontFamily
                         pixelSize: root.fontSize
                         weight: root.fontWeight
                     }
-                    visible: tableViewModel.headerData(index, "editable")
+                    visible: addController.isColumnEditable(index)
                 }
             }
         }
@@ -112,13 +112,12 @@ Item {
     // Get inserted data from input fields.
     function insertedData() {
         var data = {}
-        for (var i=0; i<tableViewModel.columnCount(); ++i) {
-            if (!tableViewModel.headerData(i, "editable")) {
+        for (var index=0; index<textFieldRepeater.count; ++index) {
+            if (!addController.isColumnEditable(index)) {
                 continue
             }
-            var modelKey = tableViewModel.headerData(i, "roleName")
-            var value = textFieldRepeater.itemAt(i).text
-            data[modelKey] = value
+            var modelKey = addController.modelHeaderRoleName(index)
+            data[modelKey] = textFieldRepeater.itemAt(index).text
         }
 
         return data
@@ -127,13 +126,7 @@ Item {
     // Get a new password and set it into text field.
     function generatePassword() {
         var password = addController.generatePassword(insertedData())
-        var index = 0;
-        for ( ; index<tableViewModel.columnCount(); ++index) {
-            var role = tableViewModel.headerData(index, "roleName")
-            if (role === "password") {
-                break;
-            }
-        }
+        var index = addController.modelsPasswordSection()
         textFieldRepeater.itemAt(index).text = password
     }
 }

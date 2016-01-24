@@ -39,7 +39,9 @@ Item {
 
         Keys.onReturnPressed: controler.copyPasswordToClipboard(currentRow)
         // TableModel emits a signal when header data has changed.
-        Component.onCompleted: listViewController.modelContentAvailable.connect(createColumns)
+        Component.onCompleted: {
+            listViewController.modelContentAvailable.connect(createColumns())
+        }
     }
 
     // ---------------------------------------------------
@@ -105,13 +107,13 @@ Item {
                 height: 30
                 text: qsTr("Undo")
                 style: PushButtonStyle {}
-                visible: accountList.currentRow >= 0 && (listViewController.modelRowState(accountList.currentRow) !== TableViewModel.Origin)
+                visible: accountList.currentRow >= 0 && (tableViewModel.modelRowState(accountList.currentRow) !== TableViewModel.Origin)
             }
             Button {
                 height: 30
                 text: qsTr("Save")
                 style: PushButtonStyle {}
-                visible: tableViewModel.isModified
+                visible: tableViewModel.isModelModified
                 onClicked: listViewController.persistModelModifications()
             }
         } // END - Row (controlBarButtonRow)
@@ -122,11 +124,12 @@ Item {
     // It gets roleName and header name from TableModel header data.
     // Importent: This function do not remove any previous columns from TableView.
     function createColumns() {
-        var visibleColumns = listViewController.getVisibleColumns();
-        for (var column in visibleColumns) {
-            var columnObj = tableView.addColumn(comp)
-            columnObj.role = column.roleName
-            columnObj.title = column.headerName
+        for (var column=0; column<listViewController.columnCount(); ++column) {
+            if (listViewController.isColumnVisible(column)) {
+                var columnObj = tableView.addColumn(comp)
+                columnObj.role = listViewController.roleNameOfColumn(column)
+                columnObj.title = listViewController.modelHeaderText(column)
+            }
         }
     }
 
@@ -135,6 +138,5 @@ Item {
         id: comp
         TableViewColumn {}
     }
-
 }
 

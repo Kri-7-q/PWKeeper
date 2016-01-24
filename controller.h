@@ -26,6 +26,8 @@ signals:
 
 public slots:
     QVariant modelData(const int section, const int row) const;
+    QVariant modelHeaderText(const int column) const;
+    QVariant standardText(const int column) const;
 
 protected:
     AbstractTableViewModel* m_pModel;
